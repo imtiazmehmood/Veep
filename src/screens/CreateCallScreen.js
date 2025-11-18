@@ -11,7 +11,6 @@ const CreateCallScreen = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const {
     createCall,
-    initLocalStream,
   } = useWebRTCContext();
 
   useEffect(() => {
@@ -51,7 +50,6 @@ const CreateCallScreen = ({ navigation }) => {
   const handleCreateCall = async () => {
     try {
       setIsLoading(true);
-      await initLocalStream();
       const newCallId = await createCall();
       navigation.replace('Call', { callId: newCallId, isCaller: true });
     } catch (error) {
