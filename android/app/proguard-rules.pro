@@ -8,3 +8,6 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # Add any project specific keep options here:
+
+# WebRTC ProGuard rules
+-keep class org.webrtc.** { *; }

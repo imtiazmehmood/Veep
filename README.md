@@ -1,18 +1,17 @@
 # Veep - Video Calling App
 
-A production-ready video calling application built with React Native, WebRTC, and Firebase.
+A production-ready video calling application built with React Native and WebRTC using Socket.IO for signaling.
 
 ## 🎯 Features
 
 - ✅ Create video calls
-- ✅ Join video calls by ID
+- ✅ Join video calls by Caller ID
 - ✅ Real-time audio/video streaming
 - ✅ Switch between front/back camera
 - ✅ Mute/unmute audio
 - ✅ Toggle video on/off
-- ✅ Picture-in-picture local video preview
-- ✅ Full-screen remote video
-- ✅ Auto reconnection handling
+- ✅ Incoming/Outgoing call screens
+- ✅ Full-screen video during calls
 - ✅ Works on both Android & iOS
 
 ## 📋 Prerequisites
@@ -23,7 +22,6 @@ Before you begin, ensure you have:
 - React Native development environment set up
 - Android Studio (for Android development)
 - Xcode (for iOS development, macOS only)
-- A Firebase project with Firestore enabled
 
 ## 🚀 Setup Instructions
 
@@ -33,48 +31,25 @@ Before you begin, ensure you have:
 npm install
 ```
 
-### Step 2: Firebase Configuration
+### Step 2: Start the Signaling Server
 
-1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Create a new project or select an existing one
-3. Enable **Firestore Database**:
-   - Go to Firestore Database
-   - Click "Create database"
-   - Start in **test mode** (for development)
-   - Choose your preferred location
-4. Get your Firebase configuration:
-   - Go to Project Settings (gear icon)
-   - Scroll down to "Your apps"
-   - Click on the web icon (`</>`) to add a web app
-   - Copy the Firebase configuration object
+1. **Start the signaling server**:
+   ```bash
+   cd server
+   npm install
+   npm start
+   ```
+   The server will start on port 3500.
 
-5. Update `src/services/firebase.js` with your Firebase config:
+2. **Configure server URL**:
+   - Open `src/config/server.js`
+   - Update `SERVER_URL` with your local IP address (for physical devices)
+   - For iOS simulator, use `localhost`
+   - For Android emulator, use `10.0.2.2`
 
-```javascript
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
-};
-```
-
-6. Set up Firestore Security Rules (for development):
-
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /calls/{callId} {
-      allow read, write: if true; // For development only
-    }
-  }
-}
-```
-
-**⚠️ Important**: The above rule allows anyone to read/write. For production, implement proper authentication and security rules.
+3. **Find your local IP**:
+   - Mac/Linux: Run `ifconfig` and look for your local IP (usually starts with 192.168.x.x)
+   - Windows: Run `ipconfig` and look for IPv4 Address
 
 ### Step 3: Android Setup
 
@@ -117,23 +92,28 @@ service cloud.firestore {
 
 ## 🧪 Testing the App
 
-### Testing Between Two Devices
+1. **Start the server**:
+   ```bash
+   cd server
+   npm start
+   ```
 
-1. **Device 1 (Caller)**:
+2. **Device 1 (Caller)**:
    - Launch the app
-   - Tap "Start Call"
+   - Tap "Start Video Call"
    - Grant camera and microphone permissions
-   - Wait for call to be created
-   - Note the Call ID displayed
+   - Note your 6-digit Caller ID (e.g., 123456)
 
-2. **Device 2 (Callee)**:
+3. **Device 2 (Callee)**:
    - Launch the app
-   - Tap "Join Call"
-   - Enter the Call ID from Device 1
+   - Tap "Start Video Call"
+   - Enter the Caller ID from Device 1
+   - Tap "Call Now"
    - Grant camera and microphone permissions
-   - Wait for connection
 
-3. **Both devices should now see each other's video and hear audio**
+4. **Device 1** will see "Calling to..." screen
+5. **Device 2** will see "Incoming Call" screen - tap the green button to accept
+6. **Both devices** should now see each other's video and hear audio
 
 ### Testing on Simulator/Emulator
 
@@ -199,36 +179,53 @@ All combinations work seamlessly!
 
 ## 📱 App Flow
 
-1. **Home Screen**: Choose to start or join a call
-2. **Create Call Screen**: Creates a new call and generates a Call ID
-3. **Join Call Screen**: Enter a Call ID to join an existing call
-4. **Call Screen**: 
-   - Full-screen remote video
-   - Picture-in-picture local video (top-right)
+1. **Join Screen**: 
+   - Displays your 6-digit Caller ID
+   - Enter another user's Caller ID to call them
+   - Tap "Call Now" to initiate
+
+2. **Outgoing Call Screen**: Shows "Calling to..." with the callee's ID
+
+3. **Incoming Call Screen**: Shows incoming call with caller's ID and accept button
+
+4. **WebRTC Room Screen**: 
+   - Full-screen video streams (local and remote)
    - Control bar at bottom:
+     - Hang up (red button)
      - Microphone toggle
      - Video toggle
      - Switch camera
-     - Hang up
 
 ## 🛠️ Project Structure
 
 ```
 veep/
+├── server/                    # Socket.IO signaling server
+│   ├── index.js              # Express server setup
+│   ├── socket.js             # Socket.IO event handlers
+│   ├── package.json          # Server dependencies
+│   └── README.md             # Server documentation
 ├── src/
 │   ├── components/
 │   │   ├── LocalVideo.js      # Local video preview component
-│   │   └── RemoteVideo.js     # Remote video component
+│   │   ├── RemoteVideo.js     # Remote video component
+│   │   ├── TextInputContainer.js # Text input component
+│   │   ├── IconContainer.js   # Icon button container
+│   │   └── icons/            # Icon components
+│   │       ├── CallAnswer.js
+│   │       ├── CallEnd.js
+│   │       ├── MicOn.js
+│   │       ├── MicOff.js
+│   │       ├── VideoOn.js
+│   │       ├── VideoOff.js
+│   │       └── CameraSwitch.js
 │   ├── screens/
 │   │   ├── HomeScreen.js      # Main screen with start/join options
-│   │   ├── CreateCallScreen.js # Create new call screen
-│   │   ├── JoinCallScreen.js   # Join call screen
-│   │   └── CallScreen.js      # Active call screen
+│   │   └── WebRTCCallScreen.js # Socket.IO WebRTC implementation
 │   ├── services/
-│   │   ├── firebase.js        # Firebase Firestore helpers
 │   │   └── webrtc.js          # WebRTC utilities
-│   ├── hooks/
-│   │   └── useWebRTC.js       # Main WebRTC hook
+│   ├── config/
+│   │   └── server.js          # Server URL configuration
 │   └── styles/
 │       ├── colors.js          # Color constants
 │       └── globalStyles.js   # Global styles
@@ -258,25 +255,6 @@ For production, consider:
 - Implementing TURN server rotation
 - Adding authentication for TURN servers
 
-### Firestore Structure
-
-```
-calls/
-  {callId}/
-    offer: RTCSessionDescription
-    answer: RTCSessionDescription
-    createdAt: timestamp
-    offerCandidates/
-      {candidateId}/
-        candidate: string
-        sdpMLineIndex: number
-        sdpMid: string
-    answerCandidates/
-      {candidateId}/
-        candidate: string
-        sdpMLineIndex: number
-        sdpMid: string
-```
 
 ## 🐛 Troubleshooting
 
@@ -292,10 +270,12 @@ calls/
 
 ### Connection Issues
 
-1. **Check Firebase Configuration**: Ensure your Firebase config is correct
-2. **Check Internet Connection**: Both devices need stable internet
-3. **Check Firestore Rules**: Ensure rules allow read/write access
-4. **Check TURN Server**: If behind NAT/firewall, TURN server is required
+1. **Server not running**: Make sure the server is started (`cd server && npm start`)
+2. **Wrong server URL**: Update `src/config/server.js` with your correct IP address
+3. **Network connectivity**: Both devices must be on the same network (for local development)
+4. **Firewall blocking**: Check if port 3500 is blocked by firewall
+5. **CORS issues**: The server includes CORS configuration, but check if your network allows it
+6. **Check TURN Server**: If behind NAT/firewall, TURN server is required
 
 ### Build Errors
 
@@ -324,20 +304,26 @@ npm start -- --reset-cache
 
 ## 📦 Dependencies
 
+### React Native App
 - `react-native-webrtc`: WebRTC implementation for React Native
-- `firebase`: Firebase SDK for Firestore
+- `socket.io-client`: Socket.IO client for signaling
 - `@react-navigation/native`: Navigation library
 - `react-native-permissions`: Permission handling
 - `react-native-gesture-handler`: Gesture support
 - `react-native-screens`: Native screen support
 
+### Signaling Server
+- `express`: Web server framework
+- `socket.io`: Real-time bidirectional event-based communication
+
 ## 🔐 Security Notes
 
-1. **Firestore Rules**: The current setup uses permissive rules for development. For production:
+1. **Signaling Server**: For production:
    - Implement user authentication
-   - Add proper security rules
-   - Validate call IDs
+   - Add proper security validation
+   - Validate caller IDs
    - Implement rate limiting
+   - Use HTTPS/WSS for secure connections
 
 2. **TURN Server**: The demo TURN server is for testing. For production:
    - Use your own TURN server
@@ -346,12 +332,11 @@ npm start -- --reset-cache
 
 ## 🚀 Production Checklist
 
-- [ ] Replace Firebase config with production credentials
-- [ ] Implement proper Firestore security rules
+- [ ] Set up production signaling server with HTTPS/WSS
+- [ ] Implement user authentication
 - [ ] Set up production TURN server
 - [ ] Add error logging/monitoring
 - [ ] Implement call quality metrics
-- [ ] Add user authentication
 - [ ] Test on multiple devices and networks
 - [ ] Optimize bundle size
 - [ ] Add analytics

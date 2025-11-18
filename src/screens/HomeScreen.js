@@ -24,22 +24,11 @@ const HomeScreen = ({ navigation }) => {
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={[globalStyles.button, styles.primaryButton]}
-            onPress={() => navigation.navigate('CreateCall')}
+            onPress={() => navigation.navigate('WebRTCCall')}
             activeOpacity={0.8}
           >
             <Text style={styles.buttonIcon}>📞</Text>
-            <Text style={globalStyles.buttonText}>Start Call</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[globalStyles.button, globalStyles.buttonSecondary, styles.secondaryButton]}
-            onPress={() => navigation.navigate('JoinCall')}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.buttonIcon}>🔗</Text>
-            <Text style={[globalStyles.buttonText, globalStyles.buttonTextSecondary]}>
-              Join Call
-            </Text>
+            <Text style={globalStyles.buttonText}>Start Video Call</Text>
           </TouchableOpacity>
         </View>
 
