@@ -12,8 +12,12 @@ import {
   ViewStyle,
   TextStyle,
   BackHandler,
+  Animated,
+  Dimensions,
+  StatusBar,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { PanGestureHandler, GestureHandlerRootView } from 'react-native-gesture-handler';
 import SocketIOClient, { Socket } from 'socket.io-client';
 import {
   mediaDevices,
@@ -97,7 +101,25 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
   const currentCallTypeRef = useRef<CallType>(CallType.JOIN);
   const isMountedRef = useRef<boolean>(true);
   const isCleaningUpRef = useRef<boolean>(false);
-
+  
+  // Animation values for draggable call screen
+  const translateY = useRef(new Animated.Value(0)).current;
+  const opacity = useRef(new Animated.Value(1)).current;
+  const scale = useRef(new Animated.Value(1)).current;
+  const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
+  
+  // Animation refs for call screens (moved to parent to avoid hooks violation)
+  const outgoingCallScale = useRef(new Animated.Value(1)).current;
+  const incomingCallScale = useRef(new Animated.Value(1)).current;
+  const incomingCallRotation = useRef(new Animated.Value(0)).current;
+  
+  // Animation refs for draggable local video (picture-in-picture)
+  const localVideoTranslateX = useRef(new Animated.Value(SCREEN_WIDTH - 140)).current;
+  const localVideoTranslateY = useRef(new Animated.Value(100)).current;
+  const localVideoScale = useRef(new Animated.Value(1)).current;
+  const localVideoStartX = useRef(SCREEN_WIDTH - 140);
+  const localVideoStartY = useRef(100);
+  
   // Helper function to update call type without causing unnecessary re-renders
   const updateCallType = (newType: CallType) => {
     if (currentCallTypeRef.current !== newType) {
@@ -127,6 +149,78 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
       isMountedRef.current = false;
     };
   }, []);
+
+  // Animation effects for call screens
+  useEffect(() => {
+    let outgoingAnimation: Animated.CompositeAnimation | null = null;
+    let incomingAnimation: Animated.CompositeAnimation | null = null;
+
+    if (currentCallTypeRef.current === CallType.OUTGOING_CALL) {
+      // Pulse animation for outgoing call
+      outgoingAnimation = Animated.loop(
+        Animated.sequence([
+          Animated.timing(outgoingCallScale, {
+            toValue: 1.1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(outgoingCallScale, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      outgoingAnimation.start();
+    } else {
+      outgoingCallScale.setValue(1);
+    }
+
+    if (currentCallTypeRef.current === CallType.INCOMING_CALL) {
+      // Pulse and rotate animation for incoming call
+      incomingAnimation = Animated.loop(
+        Animated.sequence([
+          Animated.parallel([
+            Animated.timing(incomingCallScale, {
+              toValue: 1.15,
+              duration: 800,
+              useNativeDriver: true,
+            }),
+            Animated.timing(incomingCallRotation, {
+              toValue: 1,
+              duration: 800,
+              useNativeDriver: true,
+            }),
+          ]),
+          Animated.parallel([
+            Animated.timing(incomingCallScale, {
+              toValue: 1,
+              duration: 800,
+              useNativeDriver: true,
+            }),
+            Animated.timing(incomingCallRotation, {
+              toValue: 0,
+              duration: 800,
+              useNativeDriver: true,
+            }),
+          ]),
+        ])
+      );
+      incomingAnimation.start();
+    } else {
+      incomingCallScale.setValue(1);
+      incomingCallRotation.setValue(0);
+    }
+
+    return () => {
+      if (outgoingAnimation) {
+        outgoingAnimation.stop();
+      }
+      if (incomingAnimation) {
+        incomingAnimation.stop();
+      }
+    };
+  }, [renderTrigger]);
 
   // Handle back button press
   useFocusEffect(
@@ -323,6 +417,15 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
       // Ensure call manager is started when call is answered
       InCallManager.start({ media: 'video' });
       updateCallType(CallType.WEBRTC_ROOM);
+      // Ensure local stream is initialized
+      if (!localStreamRef.current) {
+        initializeLocalStream();
+      }
+      // Reset local video position
+      localVideoTranslateX.setValue(SCREEN_WIDTH - 140);
+      localVideoTranslateY.setValue(100);
+      localVideoStartX.current = SCREEN_WIDTH - 140;
+      localVideoStartY.current = 100;
     });
     socket.on('callEnded', handleRemoteHangup);
     socket.on('callRejected', handleCallRejected);
@@ -700,6 +803,15 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
             setIsSpeakerOn(true);
             InCallManager.start({ media: 'video' });
             updateCallType(CallType.WEBRTC_ROOM);
+            // Ensure local stream is initialized
+            if (!localStreamRef.current) {
+              initializeLocalStream();
+            }
+            // Reset local video position
+            localVideoTranslateX.setValue(SCREEN_WIDTH - 140);
+            localVideoTranslateY.setValue(100);
+            localVideoStartX.current = SCREEN_WIDTH - 140;
+            localVideoStartY.current = 100;
           });
 
           socket.on('callEnded', handleRemoteHangup);
@@ -1073,6 +1185,15 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
     }
     
     updateCallType(CallType.WEBRTC_ROOM);
+    // Ensure local stream is initialized
+    if (!localStreamRef.current) {
+      initializeLocalStream();
+    }
+    // Reset local video position
+    localVideoTranslateX.setValue(SCREEN_WIDTH - 140);
+    localVideoTranslateY.setValue(100);
+    localVideoStartX.current = SCREEN_WIDTH - 140;
+    localVideoStartY.current = 100;
   }
 
   function answerCall(data: { callerId: string; rtcMessage: RTCSessionDescription }) {
@@ -1325,10 +1446,19 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
   const OutgoingCallScreen = () => {
     return (
       <View style={styles.outgoingCallContainer}>
-        <View style={styles.outgoingCallContent}>
-          <Text style={styles.outgoingCallLabel}>Calling to...</Text>
+        <Animated.View
+          style={[
+            styles.outgoingCallContent,
+            { transform: [{ scale: outgoingCallScale }] },
+          ]}>
+          <View style={styles.avatarContainer}>
+            <Text style={styles.avatarText}>
+              {otherUserId.current?.charAt(0) || '?'}
+            </Text>
+          </View>
+          <Text style={styles.outgoingCallLabel}>Calling...</Text>
           <Text style={styles.outgoingCallId}>{otherUserId.current}</Text>
-        </View>
+        </Animated.View>
         <View style={styles.outgoingCallActions}>
           <TouchableOpacity
             onPress={() => {
@@ -1343,13 +1473,33 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
   };
 
   const IncomingCallScreen = () => {
+    const rotation = incomingCallRotation.interpolate({
+      inputRange: [0, 1],
+      outputRange: ['0deg', '5deg'],
+    });
+
     return (
       <View style={styles.incomingCallContainer}>
-        <View style={styles.incomingCallContent}>
+        <Animated.View
+          style={[
+            styles.incomingCallContent,
+            {
+              transform: [
+                { scale: incomingCallScale },
+                { rotate: rotation },
+              ],
+            },
+          ]}>
+          <View style={styles.avatarContainer}>
+            <Text style={styles.avatarText}>
+              {otherUserId.current?.charAt(0) || '?'}
+            </Text>
+          </View>
+          <Text style={styles.incomingCallLabel}>Incoming Call</Text>
           <Text style={styles.incomingCallText}>
-            {otherUserId.current} is calling..
+            {otherUserId.current}
           </Text>
-        </View>
+        </Animated.View>
         <View style={styles.incomingCallActions}>
           <TouchableOpacity
             onPress={() => {
@@ -1391,22 +1541,212 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
       { color: isSpeakerOn ? colors.white : '#1D2939' },
     ];
 
+    // Gesture handler for drag to dismiss
+    const onGestureEvent = Animated.event(
+      [{ nativeEvent: { translationY: translateY } }],
+      { useNativeDriver: true }
+    );
+
+    const onHandlerStateChange = (event: any) => {
+      if (event.nativeEvent.oldState === 4) { // ACTIVE state ended
+        const { translationY, velocityY } = event.nativeEvent;
+        
+        // If dragged down more than 150px or with high velocity, dismiss
+        if (translationY > 150 || velocityY > 1000) {
+          Animated.parallel([
+            Animated.timing(translateY, {
+              toValue: SCREEN_HEIGHT,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+            Animated.timing(opacity, {
+              toValue: 0,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+            Animated.timing(scale, {
+              toValue: 0.8,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            leave();
+            // Reset animations
+            translateY.setValue(0);
+            opacity.setValue(1);
+            scale.setValue(1);
+          });
+        } else {
+          // Spring back to original position
+          Animated.parallel([
+            Animated.spring(translateY, {
+              toValue: 0,
+              useNativeDriver: true,
+              tension: 50,
+              friction: 7,
+            }),
+            Animated.spring(opacity, {
+              toValue: 1,
+              useNativeDriver: true,
+              tension: 50,
+              friction: 7,
+            }),
+            Animated.spring(scale, {
+              toValue: 1,
+              useNativeDriver: true,
+              tension: 50,
+              friction: 7,
+            }),
+          ]).start();
+        }
+      }
+    };
+
+    // Calculate opacity and scale based on drag position
+    const dragOpacity = translateY.interpolate({
+      inputRange: [0, SCREEN_HEIGHT / 2],
+      outputRange: [1, 0.5],
+      extrapolate: 'clamp',
+    });
+
+    const dragScale = translateY.interpolate({
+      inputRange: [0, SCREEN_HEIGHT / 2],
+      outputRange: [1, 0.9],
+      extrapolate: 'clamp',
+    });
+
+    // Gesture handler for draggable local video (picture-in-picture)
+    const onLocalVideoGestureEvent = Animated.event(
+      [
+        {
+          nativeEvent: {
+            translationX: localVideoTranslateX,
+            translationY: localVideoTranslateY,
+          },
+        },
+      ],
+      { useNativeDriver: true }
+    );
+
+    const onLocalVideoHandlerStateChange = (event: any) => {
+      if (event.nativeEvent.oldState === 1) {
+        // BEGAN state - store current position
+        const currentTranslateX = (localVideoTranslateX as any).__getValue ? (localVideoTranslateX as any).__getValue() : 0;
+        const currentTranslateY = (localVideoTranslateY as any).__getValue ? (localVideoTranslateY as any).__getValue() : 0;
+        localVideoStartX.current = SCREEN_WIDTH - 140 + currentTranslateX;
+        localVideoStartY.current = 100 + currentTranslateY;
+      } else if (event.nativeEvent.oldState === 4) {
+        // ACTIVE state ended - snap to edges
+        const { translationX, translationY } = event.nativeEvent;
+        const currentX = localVideoStartX.current + translationX;
+        const currentY = localVideoStartY.current + translationY;
+
+        // Snap to nearest edge
+        let targetX = currentX;
+        let targetY = currentY;
+
+        // Constrain to screen bounds
+        const videoWidth = 120;
+        const videoHeight = 160;
+        const padding = 16;
+
+        if (currentX < SCREEN_WIDTH / 2) {
+          targetX = padding;
+        } else {
+          targetX = SCREEN_WIDTH - videoWidth - padding;
+        }
+
+        if (currentY < padding) {
+          targetY = padding;
+        } else if (currentY > SCREEN_HEIGHT - videoHeight - 200) {
+          targetY = SCREEN_HEIGHT - videoHeight - 200;
+        } else {
+          targetY = currentY;
+        }
+
+        // Update start position for next gesture
+        localVideoStartX.current = targetX;
+        localVideoStartY.current = targetY;
+
+        Animated.parallel([
+          Animated.spring(localVideoTranslateX, {
+            toValue: targetX - (SCREEN_WIDTH - 140),
+            useNativeDriver: true,
+            tension: 50,
+            friction: 7,
+          }),
+          Animated.spring(localVideoTranslateY, {
+            toValue: targetY - 100,
+            useNativeDriver: true,
+            tension: 50,
+            friction: 7,
+          }),
+        ]).start();
+      }
+    };
+
     return (
-      <View style={styles.webrtcRoomContainer}>
-        {localStream ? (
-          <RTCView
-            objectFit={'cover'}
-            style={styles.localRTCView}
-            streamURL={localStream.toURL()}
-          />
-        ) : null}
-        {remoteStream ? (
-          <RTCView
-            objectFit={'cover'}
-            style={styles.remoteRTCView}
-            streamURL={remoteStream.toURL()}
-          />
-        ) : null}
+      <PanGestureHandler
+        onGestureEvent={onGestureEvent}
+        onHandlerStateChange={onHandlerStateChange}
+        activeOffsetY={10}
+        failOffsetX={[-50, 50]}>
+        <Animated.View
+          style={[
+            styles.webrtcRoomContainer,
+            {
+              transform: [
+                { translateY: translateY },
+                { scale: dragScale },
+              ],
+              opacity: dragOpacity,
+            },
+          ]}>
+          {/* Primary User Screen (Fixed) - Remote video always full screen */}
+          {remoteStream ? (
+            <View style={styles.fullScreenVideo}>
+              <RTCView
+                objectFit={'cover'}
+                style={styles.fullScreenRTCView}
+                streamURL={remoteStream.toURL()}
+              />
+            </View>
+          ) : null}
+
+          {/* Secondary User Screen (Draggable) - Local video as small floating window */}
+          {currentCallTypeRef.current === CallType.WEBRTC_ROOM && (localStream || localStreamRef.current) ? (
+            <PanGestureHandler
+              onGestureEvent={onLocalVideoGestureEvent}
+              onHandlerStateChange={onLocalVideoHandlerStateChange}
+              activeOffsetX={5}
+              activeOffsetY={5}>
+              <Animated.View
+                style={[
+                  styles.smallVideoContainer,
+                  {
+                    transform: [
+                      { translateX: localVideoTranslateX },
+                      { translateY: localVideoTranslateY },
+                    ],
+                  },
+                ]}>
+                <View style={styles.smallVideoTouchable}>
+                  {localStream || localStreamRef.current ? (
+                    <RTCView
+                      objectFit={'cover'}
+                      style={styles.smallRTCView}
+                      streamURL={(localStream || localStreamRef.current)!.toURL()}
+                    />
+                  ) : (
+                    <View style={styles.smallVideoPlaceholder}>
+                      <Text style={styles.smallVideoPlaceholderText}>Camera</Text>
+                    </View>
+                  )}
+                  <View style={styles.smallVideoBorder} />
+                </View>
+              </Animated.View>
+            </PanGestureHandler>
+          ) : null}
         <View style={styles.controlBar}>
           <IconContainer
             backgroundColor={colors.danger}
@@ -1470,7 +1810,12 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
             }}
           />
         </View>
-      </View>
+        {/* Drag indicator */}
+        <View style={styles.dragIndicator}>
+          <View style={styles.dragHandle} />
+        </View>
+      </Animated.View>
+      </PanGestureHandler>
     );
   };
 
@@ -1586,15 +1931,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 14,
   },
+  avatarContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#5568FE',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+    shadowColor: '#5568FE',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  avatarText: {
+    fontSize: 48,
+    color: colors.white,
+    fontWeight: 'bold',
+  },
   outgoingCallLabel: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#D0D4DD',
+    marginBottom: 8,
+    fontWeight: '500',
   },
   outgoingCallId: {
-    fontSize: 36,
-    marginTop: 12,
+    fontSize: 32,
     color: colors.white,
-    letterSpacing: 6,
+    letterSpacing: 4,
+    fontWeight: '600',
   },
   outgoingCallActions: {
     justifyContent: 'center',
@@ -1620,10 +1986,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 14,
   },
+  incomingCallLabel: {
+    fontSize: 16,
+    color: '#D0D4DD',
+    marginTop: 24,
+    marginBottom: 8,
+    fontWeight: '500',
+  },
   incomingCallText: {
-    fontSize: 36,
-    marginTop: 12,
+    fontSize: 32,
     color: colors.white,
+    letterSpacing: 4,
+    fontWeight: '600',
   },
   incomingCallActions: {
     flexDirection: 'row',
@@ -1649,21 +2023,100 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#050A0E',
     paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingTop: 12,
+    paddingBottom: 24,
   },
-  localRTCView: {
+  dragIndicator: {
+    position: 'absolute',
+    top: 8,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  dragHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 2,
+  },
+  fullScreenVideo: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1,
+  },
+  fullScreenRTCView: {
     flex: 1,
+    width: '100%',
+    height: '100%',
     backgroundColor: '#050A0E',
   },
-  remoteRTCView: {
-    flex: 1,
-    backgroundColor: '#050A0E',
-    marginTop: 8,
+  smallVideoContainer: {
+    position: 'absolute',
+    width: 130,
+    height: 170,
+    zIndex: 100,
+    top: 100,
+    right: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 12,
+  },
+  smallVideoTouchable: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: '#1A1C22',
+    borderWidth: 3,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
+  },
+  smallRTCView: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 13,
+  },
+  smallVideoPlaceholder: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#1A1C22',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 13,
+  },
+  smallVideoPlaceholderText: {
+    color: '#D0D4DD',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  smallVideoBorder: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 13,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
+    pointerEvents: 'none',
   },
   controlBar: {
-    marginVertical: 12,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     justifyContent: 'space-evenly',
+    paddingHorizontal: 8,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
+    paddingTop: 16,
+    zIndex: 20,
+    backgroundColor: 'rgba(5, 10, 14, 0.7)',
   },
   iconButtonBorder: {
     borderWidth: 1.5,
