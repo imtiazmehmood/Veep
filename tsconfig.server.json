@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "es2019",
+    "module": "commonjs",
+    "rootDir": "server",
+    "outDir": "server/dist",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "strict": false,
+    "skipLibCheck": true
+  },
+  "include": ["server/**/*.ts"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}
+
