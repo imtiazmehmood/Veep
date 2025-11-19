@@ -15,6 +15,7 @@ import {
   RTCView,
   RTCIceCandidate,
   RTCSessionDescription,
+  MediaStream,
 } from 'react-native-webrtc';
 import InCallManager from 'react-native-incall-manager';
 import TextInputContainer from '../components/TextInputContainer';
@@ -27,6 +28,18 @@ import VideoOn from '../asset/VideoOn';
 import VideoOff from '../asset/VideoOff';
 import CameraSwitch from '../asset/CameraSwitch';
 import { SERVER_URL, getAlternativeURLs } from '../config/server';
+
+const ICE_SERVERS = [
+  {
+    urls: 'stun:stun.l.google.com:19302',
+  },
+  {
+    urls: 'stun:stun1.l.google.com:19302',
+  },
+  {
+    urls: 'stun:stun2.l.google.com:19302',
+  },
+];
 
 export default function WebRTCCallScreen({ navigation }) {
   const [type, setType] = useState('JOIN');
@@ -46,9 +59,13 @@ export default function WebRTCCallScreen({ navigation }) {
   const socketRef = useRef(null);
   const peerConnectionRef = useRef(null);
   const isCaller = useRef(false);
+  const localStreamRef = useRef(null);
+  const remoteStreamRef = useRef(null);
+  const facingModeRef = useRef('user');
   const currentServerURL = useRef(SERVER_URL);
   const alternativeURLs = useRef(getAlternativeURLs());
   const connectionAttempts = useRef(0);
+  const pendingRemoteCandidates = useRef([]);
   
   // Log available alternatives on mount
   useEffect(() => {
@@ -157,29 +174,119 @@ export default function WebRTCCallScreen({ navigation }) {
     const socket = createSocket(SERVER_URL);
     socketRef.current = socket;
 
-    // Create Peer Connection
-    const peerConnection = new RTCPeerConnection({
-      iceServers: [
-        {
-          urls: 'stun:stun.l.google.com:19302',
-        },
-        {
-          urls: 'stun:stun1.l.google.com:19302',
-        },
-        {
-          urls: 'stun:stun2.l.google.com:19302',
-        },
-      ],
+    initializePeerConnection();
+
+    // Socket event listeners
+    socket.on('newCall', (data) => {
+      console.log('Incoming call from', data.callerId);
+      remoteRTCMessage.current = data.rtcMessage;
+      otherUserId.current = data.callerId;
+      isCaller.current = false; // We are the callee
+      setType('INCOMING_CALL');
     });
 
-    peerConnectionRef.current = peerConnection;
+    socket.on('callAnswered', async (data) => {
+      console.log('Call answered by', data.callee);
+      remoteRTCMessage.current = data.rtcMessage;
+      if (peerConnectionRef.current) {
+        await peerConnectionRef.current.setRemoteDescription(
+          new RTCSessionDescription(remoteRTCMessage.current),
+        );
+        flushPendingCandidates();
+      }
+      // Ensure call manager is started when call is answered
+      InCallManager.start({ media: 'video' });
+      setType('WEBRTC_ROOM');
+    });
+    socket.on('callEnded', handleRemoteHangup);
+    socket.on('callRejected', handleCallRejected);
 
-    // Handle remote stream
+    socket.on('ICEcandidate', (data) => {
+      console.log('Received ICE candidate from', data.sender);
+      let message = data.rtcMessage;
+      if (peerConnectionRef.current) {
+        if (peerConnectionRef.current.remoteDescription) {
+          const iceCandidate = new RTCIceCandidate({
+            candidate: message.candidate,
+            sdpMLineIndex: message.label,
+            sdpMid: message.id,
+          });
+          peerConnectionRef.current
+            .addIceCandidate(iceCandidate)
+            .then(() => {
+              console.log('ICE candidate added successfully');
+            })
+            .catch((err) => {
+              console.log('Error adding ICE candidate:', err);
+            });
+        } else {
+          console.log('Remote description not set yet, queueing ICE candidate');
+          pendingRemoteCandidates.current.push(message);
+        }
+      }
+    });
+
+    initializeLocalStream();
+
+    return () => {
+      cleanupCall({ notifyRemote: false, resetForReuse: false });
+      socket.off('callEnded', handleRemoteHangup);
+      socket.off('callRejected', handleCallRejected);
+      socket.off('newCall');
+      socket.off('callAnswered');
+      socket.off('ICEcandidate');
+      socket.disconnect();
+    };
+  }, []);
+
+  async function getVideoSourceId(facingMode) {
+    try {
+      const sourceInfos = await mediaDevices.enumerateDevices();
+      for (let i = 0; i < sourceInfos.length; i++) {
+        const sourceInfo = sourceInfos[i];
+        if (
+          sourceInfo.kind === 'videoinput' &&
+          sourceInfo.facing === facingMode
+        ) {
+          return sourceInfo.deviceId;
+        }
+      }
+    } catch (error) {
+      console.log('Error enumerating media devices:', error);
+    }
+    return null;
+  }
+
+  function initializePeerConnection() {
+    if (peerConnectionRef.current) {
+      try {
+        peerConnectionRef.current.getSenders().forEach((sender) => {
+          try {
+            peerConnectionRef.current.removeTrack(sender);
+          } catch (err) {
+            console.log('Error removing sender:', err?.message);
+          }
+        });
+        peerConnectionRef.current.ontrack = null;
+        peerConnectionRef.current.onicecandidate = null;
+        peerConnectionRef.current.close();
+      } catch (error) {
+        console.log('Error cleaning previous peer connection:', error);
+      }
+    }
+
+    const peerConnection = new RTCPeerConnection({
+      iceServers: ICE_SERVERS,
+    });
+
     peerConnection.ontrack = (event) => {
-      setRemoteStream(event.streams[0]);
+      const [stream] = event.streams;
+      if (stream) {
+        remoteStreamRef.current = stream;
+        setRemoteStream(stream);
+      }
     };
 
-    // Handle ICE candidates
     peerConnection.onicecandidate = (event) => {
       if (event.candidate && otherUserId.current) {
         const iceData = {
@@ -189,7 +296,6 @@ export default function WebRTCCallScreen({ navigation }) {
             candidate: event.candidate.candidate,
           },
         };
-        // Send to the other user - use calleeId if we're the caller, callerId if we're the callee
         if (isCaller.current) {
           iceData.calleeId = otherUserId.current;
         } else {
@@ -202,32 +308,24 @@ export default function WebRTCCallScreen({ navigation }) {
       }
     };
 
-    // Socket event listeners
-    socket.on('newCall', (data) => {
-      console.log('Incoming call from', data.callerId);
-      remoteRTCMessage.current = data.rtcMessage;
-      otherUserId.current = data.callerId;
-      isCaller.current = false; // We are the callee
-      setType('INCOMING_CALL');
-    });
+    peerConnectionRef.current = peerConnection;
 
-    socket.on('callAnswered', (data) => {
-      console.log('Call answered by', data.callee);
-      remoteRTCMessage.current = data.rtcMessage;
-      if (peerConnectionRef.current) {
-        peerConnectionRef.current.setRemoteDescription(
-          new RTCSessionDescription(remoteRTCMessage.current),
-        );
-      }
-      // Ensure call manager is started when call is answered
-      InCallManager.start({ media: 'video' });
-      setType('WEBRTC_ROOM');
-    });
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach((track) => {
+        peerConnection.addTrack(track, localStreamRef.current);
+      });
+    }
+  }
 
-    socket.on('ICEcandidate', (data) => {
-      console.log('Received ICE candidate from', data.sender);
-      let message = data.rtcMessage;
-      if (peerConnectionRef.current) {
+  function flushPendingCandidates() {
+    if (
+      pendingRemoteCandidates.current.length &&
+      peerConnectionRef.current &&
+      peerConnectionRef.current.remoteDescription
+    ) {
+      const queue = [...pendingRemoteCandidates.current];
+      pendingRemoteCandidates.current = [];
+      queue.forEach((message) => {
         const iceCandidate = new RTCIceCandidate({
           candidate: message.candidate,
           sdpMLineIndex: message.label,
@@ -236,70 +334,111 @@ export default function WebRTCCallScreen({ navigation }) {
         peerConnectionRef.current
           .addIceCandidate(iceCandidate)
           .then(() => {
-            console.log('ICE candidate added successfully');
+            console.log('Queued ICE candidate added successfully');
           })
           .catch((err) => {
-            console.log('Error adding ICE candidate:', err);
+            console.log('Error adding queued ICE candidate:', err);
           });
-      }
-    });
+      });
+    }
+  }
 
-    // Get user media
-    let isFront = false;
-    mediaDevices.enumerateDevices().then((sourceInfos) => {
-      let videoSourceId;
-      for (let i = 0; i < sourceInfos.length; i++) {
-        const sourceInfo = sourceInfos[i];
-        if (
-          sourceInfo.kind == 'videoinput' &&
-          sourceInfo.facing == (isFront ? 'user' : 'environment')
-        ) {
-          videoSourceId = sourceInfo.deviceId;
-        }
-      }
-
-      mediaDevices
-        .getUserMedia({
-          audio: true,
-          video: {
-            mandatory: {
-              minWidth: 500,
-              minHeight: 300,
-              minFrameRate: 30,
-            },
-            facingMode: isFront ? 'user' : 'environment',
-            optional: videoSourceId ? [{ sourceId: videoSourceId }] : [],
+  async function initializeLocalStream(facingMode = facingModeRef.current) {
+    try {
+      const videoSourceId = await getVideoSourceId(facingMode);
+      const stream = await mediaDevices.getUserMedia({
+        audio: true,
+        video: {
+          mandatory: {
+            minWidth: 500,
+            minHeight: 300,
+            minFrameRate: 30,
           },
-        })
-        .then((stream) => {
-          setLocalStream(stream);
-          if (peerConnectionRef.current) {
-            stream.getTracks().forEach((track) => {
-              peerConnectionRef.current.addTrack(track, stream);
-            });
-          }
-        })
-        .catch((error) => {
-          console.log('Error getting user media:', error);
-        });
-    });
-
-    return () => {
-      // Cleanup call manager
-      InCallManager.stop();
-      
-      socket.off('newCall');
-      socket.off('callAnswered');
-      socket.off('ICEcandidate');
-      socket.disconnect();
+          facingMode,
+          optional: videoSourceId ? [{ sourceId: videoSourceId }] : [],
+        },
+      });
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach((track) => track.stop());
+      }
+      localStreamRef.current = stream;
+      setLocalStream(stream);
       if (peerConnectionRef.current) {
+        stream.getTracks().forEach((track) => {
+          peerConnectionRef.current.addTrack(track, stream);
+        });
+      }
+    } catch (error) {
+      console.log('Error getting user media:', error);
+    }
+  }
+
+  function cleanupCall({ notifyRemote = false, resetForReuse = true, reason = '' } = {}) {
+    console.log('Cleaning up call state', reason);
+    if (notifyRemote && socketRef.current && otherUserId.current) {
+      socketRef.current.emit('leaveCall', {
+        targetId: otherUserId.current,
+      });
+    }
+    InCallManager.stop();
+    remoteRTCMessage.current = null;
+    isCaller.current = false;
+
+    if (peerConnectionRef.current) {
+      try {
+        peerConnectionRef.current.getSenders().forEach((sender) => {
+          try {
+            peerConnectionRef.current.removeTrack(sender);
+          } catch (err) {
+            console.log('Error removing sender during cleanup:', err?.message);
+          }
+        });
         peerConnectionRef.current.close();
+      } catch (error) {
+        console.log('Error closing peer connection:', error);
+      } finally {
+        peerConnectionRef.current = null;
       }
-      if (localStream) {
-        localStream.getTracks().forEach((track) => track.stop());
-      }
-    };
-  }, []);
+    }
+
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach((track) => track.stop());
+      localStreamRef.current = null;
+    }
+    setLocalStream(null);
+
+    if (remoteStreamRef.current) {
+      remoteStreamRef.current.getTracks().forEach((track) => track.stop?.());
+      remoteStreamRef.current = null;
+    }
+    setRemoteStream(null);
+
+    pendingRemoteCandidates.current = [];
+
+    otherUserId.current = null;
+    facingModeRef.current = 'user';
+
+    if (resetForReuse) {
+      initializePeerConnection();
+      initializeLocalStream();
+      setConnectionStatus(`Connected to ${currentServerURL.current.replace('http://', '')}`);
+    }
+
+    setType('JOIN');
+    setOtherUserIdInput('');
+  }
+
+  function handleRemoteHangup(data) {
+    console.log('Remote user ended the call', data?.sender);
+    cleanupCall({ notifyRemote: false, reason: 'Remote hangup' });
+    setConnectionStatus('Call ended by remote user');
+  }
+
+  function handleCallRejected(data) {
+    console.log('Call rejected by', data?.callee);
+    cleanupCall({ notifyRemote: false, reason: 'Call rejected' });
+    setConnectionStatus('Call rejected by other user');
+  }
 
   // Process call (initiate)
   async function processCall() {
@@ -338,9 +477,10 @@ export default function WebRTCCallScreen({ navigation }) {
 
     console.log('Answering call from', otherUserId.current);
     isCaller.current = false; // We are the callee
-    peerConnectionRef.current.setRemoteDescription(
+    await peerConnectionRef.current.setRemoteDescription(
       new RTCSessionDescription(remoteRTCMessage.current),
     );
+    flushPendingCandidates();
 
     const sessionDescription = await peerConnectionRef.current.createAnswer();
     await peerConnectionRef.current.setLocalDescription(sessionDescription);
@@ -383,20 +523,64 @@ export default function WebRTCCallScreen({ navigation }) {
   }
 
   // Switch Camera
-  function switchCamera() {
-    if (localStream) {
-      localStream.getVideoTracks().forEach((track) => {
-        track._switchCamera();
+  async function switchCamera() {
+    if (!localStreamRef.current) {
+      return;
+    }
+    const nextFacing =
+      facingModeRef.current === 'user' ? 'environment' : 'user';
+    try {
+      const videoSourceId = await getVideoSourceId(nextFacing);
+      const videoStream = await mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          mandatory: {
+            minWidth: 500,
+            minHeight: 300,
+            minFrameRate: 30,
+          },
+          facingMode: nextFacing,
+          optional: videoSourceId ? [{ sourceId: videoSourceId }] : [],
+        },
       });
+      const newVideoTrack = videoStream.getVideoTracks()[0];
+      if (!newVideoTrack) {
+        console.log('No video track available for camera switch');
+        return;
+      }
+
+      facingModeRef.current = nextFacing;
+
+      const videoSender = peerConnectionRef.current
+        ?.getSenders()
+        ?.find((sender) => sender.track && sender.track.kind === 'video');
+
+      if (videoSender) {
+        await videoSender.replaceTrack(newVideoTrack);
+      } else if (peerConnectionRef.current) {
+        peerConnectionRef.current.addTrack(newVideoTrack, localStreamRef.current);
+      }
+
+      localStreamRef.current.getVideoTracks().forEach((track) => {
+        track.stop();
+        localStreamRef.current.removeTrack(track);
+      });
+      localStreamRef.current.addTrack(newVideoTrack);
+
+      const updatedStream = new MediaStream(localStreamRef.current);
+      localStreamRef.current = updatedStream;
+      setLocalStream(updatedStream);
+    } catch (error) {
+      console.log('Error switching camera:', error);
     }
   }
 
   // Enable/Disable Camera
   function toggleCamera() {
-    if (localStream) {
+    if (localStreamRef.current) {
       const newState = !localWebcamOn;
       setLocalWebcamOn(newState);
-      localStream.getVideoTracks().forEach((track) => {
+      localStreamRef.current.getVideoTracks().forEach((track) => {
         track.enabled = newState;
       });
     }
@@ -404,10 +588,10 @@ export default function WebRTCCallScreen({ navigation }) {
 
   // Enable/Disable Mic
   function toggleMic() {
-    if (localStream) {
+    if (localStreamRef.current) {
       const newState = !localMicOn;
       setLocalMicOn(newState);
-      localStream.getAudioTracks().forEach((track) => {
+      localStreamRef.current.getAudioTracks().forEach((track) => {
         track.enabled = newState;
       });
     }
@@ -415,20 +599,18 @@ export default function WebRTCCallScreen({ navigation }) {
 
   // Destroy WebRTC Connection
   function leave() {
-    // Stop call manager
-    InCallManager.stop();
-    
-    if (peerConnectionRef.current) {
-      peerConnectionRef.current.close();
-      peerConnectionRef.current = null;
+    cleanupCall({ notifyRemote: true, reason: 'Local hangup' });
+  }
+
+  function rejectIncomingCall() {
+    console.log('Rejecting incoming call');
+    if (socketRef.current && socketRef.current.connected && otherUserId.current) {
+      socketRef.current.emit('rejectCall', {
+        callerId: otherUserId.current,
+      });
     }
-    if (localStream) {
-      localStream.getTracks().forEach((track) => track.stop());
-      setLocalStream(null);
-    }
-    setRemoteStream(null);
-    otherUserId.current = null;
-    setType('JOIN');
+    cleanupCall({ notifyRemote: false, reason: 'Rejected incoming call' });
+    setConnectionStatus('You rejected the call');
   }
 
   const JoinScreen = () => {
@@ -670,13 +852,28 @@ export default function WebRTCCallScreen({ navigation }) {
         </View>
         <View
           style={{
-            justifyContent: 'center',
+            flexDirection: 'row',
+            justifyContent: 'space-evenly',
             alignItems: 'center',
           }}>
           <TouchableOpacity
             onPress={() => {
+              rejectIncomingCall();
+            }}
+            style={{
+              backgroundColor: '#FF5D5D',
+              borderRadius: 30,
+              height: 60,
+              aspectRatio: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginRight: 24,
+            }}>
+            <CallEnd width={32} height={32} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
               processAccept();
-              setType('WEBRTC_ROOM');
             }}
             style={{
               backgroundColor: 'green',
