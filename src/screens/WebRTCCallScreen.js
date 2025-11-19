@@ -50,6 +50,7 @@ export default function WebRTCCallScreen({ navigation }) {
   const [remoteStream, setRemoteStream] = useState(null);
   const [localMicOn, setLocalMicOn] = useState(true);
   const [localWebcamOn, setLocalWebcamOn] = useState(true);
+  const [isSpeakerOn, setIsSpeakerOn] = useState(true);
   const [otherUserIdInput, setOtherUserIdInput] = useState('');
   const [isSocketConnected, setIsSocketConnected] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('Initializing...');
@@ -183,6 +184,7 @@ export default function WebRTCCallScreen({ navigation }) {
       otherUserId.current = data.callerId;
       isCaller.current = false; // We are the callee
       setType('INCOMING_CALL');
+      startIncomingRingtone();
     });
 
     socket.on('callAnswered', async (data) => {
@@ -194,6 +196,9 @@ export default function WebRTCCallScreen({ navigation }) {
         );
         flushPendingCandidates();
       }
+      stopAllRingSounds();
+      InCallManager.setForceSpeakerphoneOn(true);
+      setIsSpeakerOn(true);
       // Ensure call manager is started when call is answered
       InCallManager.start({ media: 'video' });
       setType('WEBRTC_ROOM');
@@ -380,6 +385,7 @@ export default function WebRTCCallScreen({ navigation }) {
         targetId: otherUserId.current,
       });
     }
+    stopAllRingSounds();
     InCallManager.stop();
     remoteRTCMessage.current = null;
     isCaller.current = false;
@@ -417,6 +423,8 @@ export default function WebRTCCallScreen({ navigation }) {
 
     otherUserId.current = null;
     facingModeRef.current = 'user';
+    setIsSpeakerOn(true);
+    InCallManager.setForceSpeakerphoneOn(true);
 
     if (resetForReuse) {
       initializePeerConnection();
@@ -440,6 +448,35 @@ export default function WebRTCCallScreen({ navigation }) {
     setConnectionStatus('Call rejected by other user');
   }
 
+  function stopAllRingSounds() {
+    try {
+      InCallManager.stopRingback();
+    } catch (error) {
+      console.log('Error stopping ringback:', error?.message || error);
+    }
+    try {
+      InCallManager.stopRingtone();
+    } catch (error) {
+      console.log('Error stopping ringtone:', error?.message || error);
+    }
+  }
+
+  function startOutgoingRingback() {
+    try {
+      InCallManager.startRingback('_DEFAULT_');
+    } catch (error) {
+      console.log('Error starting ringback:', error?.message || error);
+    }
+  }
+
+  function startIncomingRingtone() {
+    try {
+      InCallManager.startRingtone('_DEFAULT_');
+    } catch (error) {
+      console.log('Error starting ringtone:', error?.message || error);
+    }
+  }
+
   // Process call (initiate)
   async function processCall() {
     if (!peerConnectionRef.current) {
@@ -461,6 +498,8 @@ export default function WebRTCCallScreen({ navigation }) {
     
     // Start call manager for audio routing and proximity sensor
     InCallManager.start({ media: 'video' });
+    InCallManager.setForceSpeakerphoneOn(true);
+    setIsSpeakerOn(true);
     
     const sessionDescription = await peerConnectionRef.current.createOffer();
     await peerConnectionRef.current.setLocalDescription(sessionDescription);
@@ -469,6 +508,7 @@ export default function WebRTCCallScreen({ navigation }) {
       calleeId: otherUserId.current,
       rtcMessage: sessionDescription,
     });
+    startOutgoingRingback();
   }
 
   // Process accept (answer call)
@@ -481,12 +521,15 @@ export default function WebRTCCallScreen({ navigation }) {
       new RTCSessionDescription(remoteRTCMessage.current),
     );
     flushPendingCandidates();
+    stopAllRingSounds();
 
     const sessionDescription = await peerConnectionRef.current.createAnswer();
     await peerConnectionRef.current.setLocalDescription(sessionDescription);
 
     // Start call manager for audio routing and proximity sensor
     InCallManager.start({ media: 'video' });
+    InCallManager.setForceSpeakerphoneOn(true);
+    setIsSpeakerOn(true);
 
     answerCall({
       callerId: otherUserId.current,
@@ -594,6 +637,21 @@ export default function WebRTCCallScreen({ navigation }) {
       localStreamRef.current.getAudioTracks().forEach((track) => {
         track.enabled = newState;
       });
+      try {
+        InCallManager.setMicrophoneMute(!newState);
+      } catch (error) {
+        console.log('Error toggling microphone mute:', error?.message || error);
+      }
+    }
+  }
+
+  function toggleSpeaker() {
+    const newState = !isSpeakerOn;
+    setIsSpeakerOn(newState);
+    try {
+      InCallManager.setForceSpeakerphoneOn(newState);
+    } catch (error) {
+      console.log('Error toggling speakerphone:', error?.message || error);
     }
   }
 
@@ -609,6 +667,7 @@ export default function WebRTCCallScreen({ navigation }) {
         callerId: otherUserId.current,
       });
     }
+    stopAllRingSounds();
     cleanupCall({ notifyRemote: false, reason: 'Rejected incoming call' });
     setConnectionStatus('You rejected the call');
   }
@@ -963,6 +1022,28 @@ export default function WebRTCCallScreen({ navigation }) {
                 <VideoOn width={24} height={24} fill="#FFF" />
               ) : (
                 <VideoOff width={36} height={36} fill="#1D2939" />
+              );
+            }}
+          />
+          <IconContainer
+            style={{
+              borderWidth: 1.5,
+              borderColor: '#2B3034',
+            }}
+            backgroundColor={isSpeakerOn ? '#5568FE' : 'transparent'}
+            onPress={() => {
+              toggleSpeaker();
+            }}
+            Icon={() => {
+              return (
+                <Text
+                  style={{
+                    color: isSpeakerOn ? '#FFF' : '#1D2939',
+                    fontSize: 16,
+                    fontWeight: '700',
+                  }}>
+                  {isSpeakerOn ? 'SPK' : 'EAR'}
+                </Text>
               );
             }}
           />
