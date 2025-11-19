@@ -11,7 +11,9 @@ import {
   StyleProp,
   ViewStyle,
   TextStyle,
+  BackHandler,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import SocketIOClient, { Socket } from 'socket.io-client';
 import {
   mediaDevices,
@@ -47,7 +49,13 @@ const ICE_SERVERS = [
   },
 ];
 
-type CallType = 'JOIN' | 'INCOMING_CALL' | 'OUTGOING_CALL' | 'WEBRTC_ROOM';
+enum CallType {
+  JOIN = 'JOIN',
+  INCOMING_CALL = 'INCOMING_CALL',
+  OUTGOING_CALL = 'OUTGOING_CALL',
+  WEBRTC_ROOM = 'WEBRTC_ROOM',
+}
+
 type FacingMode = 'user' | 'environment';
 
 interface CleanupCallOptions {
@@ -57,7 +65,6 @@ interface CleanupCallOptions {
 }
 
 const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation }) => {
-  const [type, setType] = useState<CallType>('JOIN');
   const [callerId] = useState<string>(
     Math.floor(100000 + Math.random() * 900000).toString(),
   );
@@ -70,6 +77,8 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
   const [isSocketConnected, setIsSocketConnected] = useState<boolean>(false);
   const [connectionStatus, setConnectionStatus] = useState<string>('Initializing...');
   const [canInitiateCall, setCanInitiateCall] = useState<boolean>(true);
+  // Minimal render trigger - only increments when screen needs to change
+  const [renderTrigger, setRenderTrigger] = useState<number>(0);
 
   const otherUserId = useRef<string | null>(null);
   const remoteRTCMessage = useRef<RTCSessionDescription | null>(null);
@@ -85,12 +94,60 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
   const pendingRemoteCandidates = useRef<RTCIceCandidate[]>([]);
   const [lastDialedId, setLastDialedId] = useState<string>('');
   const ringingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const currentCallTypeRef = useRef<CallType>(CallType.JOIN);
+  const isMountedRef = useRef<boolean>(true);
+  const isCleaningUpRef = useRef<boolean>(false);
+
+  // Helper function to update call type without causing unnecessary re-renders
+  const updateCallType = (newType: CallType) => {
+    if (currentCallTypeRef.current !== newType) {
+      currentCallTypeRef.current = newType;
+      // Only trigger re-render when screen actually needs to change
+      setRenderTrigger(prev => prev + 1);
+    }
+  };
+
+  // Get current call type (for switch statement)
+  const currentCallType = currentCallTypeRef.current;
+  
+  // Helper function to safely set state only if component is mounted
+  const safeSetState = <T,>(setter: (value: T) => void, value: T) => {
+    if (isMountedRef.current) {
+      setter(value);
+    }
+  };
   
   // Log available alternatives on mount
   useEffect(() => {
     console.log('🔧 Available server URLs to try:', alternativeURLs.current.length);
     console.log('📋 URLs:', alternativeURLs.current);
+    isMountedRef.current = true;
+    
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
+
+  // Handle back button press
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        console.log('Back button pressed');
+        // If in a call, end it first
+        if (currentCallTypeRef.current === CallType.WEBRTC_ROOM || 
+            currentCallTypeRef.current === CallType.OUTGOING_CALL || 
+            currentCallTypeRef.current === CallType.INCOMING_CALL) {
+          leave();
+          return true; // Prevent default back action
+        }
+        // Otherwise allow navigation back
+        return false;
+      };
+
+      const backHandler = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => backHandler.remove();
+    }, [])
+  );
 
   // Initialize Socket and WebRTC
   useEffect(() => {
@@ -102,7 +159,18 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
 
       socket.on('reconnect', (attemptNumber: number) => {
         console.log('Reconnected after', attemptNumber, 'attempts');
+        if (!isMountedRef.current) return;
         setIsSocketConnected(true);
+        // If we're on the JOIN screen, ensure we can initiate calls
+        if (currentCallTypeRef.current === CallType.JOIN) {
+          console.log('Resetting canInitiateCall after reconnection');
+          setCanInitiateCall(true);
+          // Also ensure peer connection is ready
+          if (!peerConnectionRef.current) {
+            initializePeerConnection();
+          }
+        }
+        setConnectionStatus(`Connected to ${currentServerURL.current.replace('http://', '')}`);
       });
 
       socket.on('reconnect_error', (error: Error) => {
@@ -115,10 +183,30 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
 
       socket.on('disconnect', (reason: string) => {
         console.log('Socket disconnected:', reason);
+        if (!isMountedRef.current) return;
         setIsSocketConnected(false);
+        
+        // If we're in an active call, cleanup and reset
+        const currentType = currentCallTypeRef.current;
+        if (currentType === CallType.WEBRTC_ROOM || currentType === CallType.OUTGOING_CALL || currentType === CallType.INCOMING_CALL) {
+          console.log('Socket disconnected during call, cleaning up...');
+          cleanupCall({ notifyRemote: false, reason: 'Socket disconnected', resetForReuse: true });
+        }
+        
         if (reason === 'io server disconnect') {
-          // Server disconnected the socket, reconnect manually
-          socket.connect();
+          // Server disconnected the socket, reconnect manually (only if mounted)
+          if (isMountedRef.current) {
+            socket.connect();
+          }
+        } else {
+          // For other disconnection reasons, try to reconnect (only if mounted)
+          if (isMountedRef.current) {
+            setTimeout(() => {
+              if (isMountedRef.current && !socket.connected) {
+                socket.connect();
+              }
+            }, 1000);
+          }
         }
       });
     };
@@ -140,10 +228,15 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
       socket.on('connect', () => {
         console.log('✅ Socket connected with ID:', socket.id, 'Transport:', socket.io.engine.transport.name);
         console.log('✅ Connected to server:', url);
+        if (!isMountedRef.current) return;
         currentServerURL.current = url;
         setIsSocketConnected(true);
         connectionAttempts.current = 0;
         setConnectionStatus(`Connected to ${url.replace('http://', '')}`);
+        // If we're on the JOIN screen, ensure we can initiate calls
+        if (currentCallTypeRef.current === CallType.JOIN) {
+          setCanInitiateCall(true);
+        }
       });
 
       socket.on('connect_error', (error: Error) => {
@@ -178,8 +271,10 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
           console.log('3. Ensure both devices are on the same Wi-Fi network');
           console.log('4. Check firewall allows connections on port 3500');
           console.log('5. Try manually setting SERVER_IP environment variable');
-          setIsSocketConnected(false);
-          setConnectionStatus('Connection failed - Check server and network');
+          if (isMountedRef.current) {
+            setIsSocketConnected(false);
+            setConnectionStatus('Connection failed - Check server and network');
+          }
         }
       });
 
@@ -198,16 +293,18 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
     // Socket event listeners
     socket.on('newCall', (data) => {
       console.log('Incoming call from', data.callerId);
+      if (!isMountedRef.current) return;
       remoteRTCMessage.current = data.rtcMessage;
       otherUserId.current = data.callerId;
       isCaller.current = false; // We are the callee
-      setType('INCOMING_CALL');
+      updateCallType(CallType.INCOMING_CALL);
       startIncomingRingtone();
       startRingingTimeout();
     });
 
     socket.on('callAnswered', async (data) => {
       console.log('Call answered by', data.callee);
+      if (!isMountedRef.current) return;
       remoteRTCMessage.current = data.rtcMessage;
       if (peerConnectionRef.current && remoteRTCMessage.current) {
         await peerConnectionRef.current.setRemoteDescription(
@@ -215,18 +312,24 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
         );
         flushPendingCandidates();
       }
+      // Clear the ringing timeout since call is now answered
+      if (ringingTimeoutRef.current) {
+        clearTimeout(ringingTimeoutRef.current);
+        ringingTimeoutRef.current = null;
+      }
       stopAllRingSounds();
       InCallManager.setForceSpeakerphoneOn(true);
       setIsSpeakerOn(true);
       // Ensure call manager is started when call is answered
       InCallManager.start({ media: 'video' });
-      setType('WEBRTC_ROOM');
+      updateCallType(CallType.WEBRTC_ROOM);
     });
     socket.on('callEnded', handleRemoteHangup);
     socket.on('callRejected', handleCallRejected);
 
     socket.on('ICEcandidate', (data) => {
       console.log('Received ICE candidate from', data.sender);
+      if (!isMountedRef.current) return;
       let message = data.rtcMessage;
       if (peerConnectionRef.current) {
         if (peerConnectionRef.current.remoteDescription) {
@@ -253,13 +356,87 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
     initializeLocalStream();
 
     return () => {
-      cleanupCall({ notifyRemote: false, resetForReuse: false });
-      socket.off('callEnded', handleRemoteHangup);
-      socket.off('callRejected', handleCallRejected);
-      socket.off('newCall');
-      socket.off('callAnswered');
-      socket.off('ICEcandidate');
-      socket.disconnect();
+      console.log('🧹 Component unmounting - cleaning up...');
+      isMountedRef.current = false;
+      
+      // Stop all timers first
+      if (ringingTimeoutRef.current) {
+        clearTimeout(ringingTimeoutRef.current);
+        ringingTimeoutRef.current = null;
+      }
+      
+      // Stop all ring sounds
+      try {
+        InCallManager.stopRingback();
+        InCallManager.stopRingtone();
+        InCallManager.stop();
+      } catch (error: any) {
+        console.log('Error stopping InCallManager:', error?.message || error);
+      }
+      
+      // Cleanup peer connection
+      if (peerConnectionRef.current) {
+        try {
+          (peerConnectionRef.current as any).ontrack = null;
+          (peerConnectionRef.current as any).onicecandidate = null;
+          (peerConnectionRef.current as any).onconnectionstatechange = null;
+          (peerConnectionRef.current as any).oniceconnectionstatechange = null;
+          peerConnectionRef.current.close();
+        } catch (error: any) {
+          console.log('Error closing peer connection:', error?.message || error);
+        } finally {
+          peerConnectionRef.current = null;
+        }
+      }
+      
+      // Cleanup streams
+      if (localStreamRef.current) {
+        try {
+          localStreamRef.current.getTracks().forEach((track) => track.stop());
+        } catch (error: any) {
+          console.log('Error stopping local stream tracks:', error?.message || error);
+        }
+        localStreamRef.current = null;
+      }
+      
+      if (remoteStreamRef.current) {
+        try {
+          remoteStreamRef.current.getTracks().forEach((track) => track.stop?.());
+        } catch (error: any) {
+          console.log('Error stopping remote stream tracks:', error?.message || error);
+        }
+        remoteStreamRef.current = null;
+      }
+      
+      // Cleanup socket - use socketRef.current to get the actual current socket
+      if (socketRef.current) {
+        try {
+          // Remove all event listeners safely
+          socketRef.current.off('callEnded');
+          socketRef.current.off('callRejected');
+          socketRef.current.off('newCall');
+          socketRef.current.off('callAnswered');
+          socketRef.current.off('ICEcandidate');
+          socketRef.current.off('connect');
+          socketRef.current.off('connect_error');
+          socketRef.current.off('disconnect');
+          socketRef.current.off('reconnect');
+          socketRef.current.off('reconnect_attempt');
+          socketRef.current.off('reconnect_error');
+          socketRef.current.off('reconnect_failed');
+          
+          // Disconnect socket
+          if (socketRef.current.connected) {
+            socketRef.current.disconnect();
+          }
+        } catch (error: any) {
+          console.log('Error cleaning up socket:', error?.message || error);
+        } finally {
+          socketRef.current = null;
+        }
+      }
+      
+      console.log('✅ Cleanup complete');
     };
   }, []);
 
@@ -295,6 +472,8 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
         });
         (peerConnectionRef.current as any).ontrack = null;
         (peerConnectionRef.current as any).onicecandidate = null;
+        (peerConnectionRef.current as any).onconnectionstatechange = null;
+        (peerConnectionRef.current as any).oniceconnectionstatechange = null;
         peerConnectionRef.current.close();
       } catch (error: any) {
         console.log('Error cleaning previous peer connection:', error?.message || error);
@@ -331,6 +510,48 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
         sendICEcandidate(iceData);
       } else {
         console.log('End of candidates.');
+      }
+    };
+
+    // Monitor connection state changes
+    (peerConnection as any).onconnectionstatechange = () => {
+      const state = peerConnection.connectionState;
+      console.log('Peer connection state changed:', state);
+      
+      if (state === 'disconnected' || state === 'failed' || state === 'closed') {
+        console.log('Peer connection lost, cleaning up call');
+        // Only cleanup if we're in an active call state and not already cleaning up
+        const currentType = currentCallTypeRef.current;
+        if (!isCleaningUpRef.current && 
+            (currentType === CallType.WEBRTC_ROOM || currentType === CallType.OUTGOING_CALL || currentType === CallType.INCOMING_CALL)) {
+          // Reset canInitiateCall immediately
+          if (isMountedRef.current) {
+            setCanInitiateCall(true);
+            setConnectionStatus('Call disconnected - Ready to call again');
+          }
+          cleanupCall({ notifyRemote: true, reason: `Connection ${state}`, resetForReuse: true });
+        }
+      }
+    };
+
+    // Monitor ICE connection state changes
+    (peerConnection as any).oniceconnectionstatechange = () => {
+      const iceState = peerConnection.iceConnectionState;
+      console.log('ICE connection state changed:', iceState);
+      
+      if (iceState === 'disconnected' || iceState === 'failed' || iceState === 'closed') {
+        console.log('ICE connection lost');
+        // Only cleanup if we're in an active call state and not already cleaning up
+        const currentType = currentCallTypeRef.current;
+        if (!isCleaningUpRef.current && 
+            (currentType === CallType.WEBRTC_ROOM || currentType === CallType.OUTGOING_CALL || currentType === CallType.INCOMING_CALL)) {
+          // Reset canInitiateCall immediately
+          if (isMountedRef.current) {
+            setCanInitiateCall(true);
+            setConnectionStatus('Call disconnected - Ready to call again');
+          }
+          cleanupCall({ notifyRemote: true, reason: `ICE connection ${iceState}`, resetForReuse: true });
+        }
       }
     };
 
@@ -399,14 +620,147 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
     }
   }
 
+  // Function to reconnect socket if disconnected
+  function reconnectSocketIfNeeded() {
+    if (!isMountedRef.current) return;
+    if (socketRef.current && !socketRef.current.connected) {
+      console.log('Socket disconnected, attempting to reconnect...');
+      setConnectionStatus('Reconnecting to server...');
+      
+      // Try to reconnect the existing socket
+      socketRef.current.connect();
+      
+      // If reconnection fails, create a new socket connection
+      setTimeout(() => {
+        if (!isMountedRef.current) return;
+        if (socketRef.current && !socketRef.current.connected) {
+          console.log('Socket reconnection failed, creating new connection...');
+          const socket = SocketIOClient(currentServerURL.current, {
+            transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionAttempts: 3,
+            reconnectionDelay: 1000,
+            timeout: 10000,
+            query: {
+              callerId,
+            },
+          });
+
+          socket.on('connect', () => {
+            console.log('✅ Socket reconnected with ID:', socket.id);
+            if (!isMountedRef.current) return;
+            setIsSocketConnected(true);
+            setConnectionStatus(`Connected to ${currentServerURL.current.replace('http://', '')}`);
+            // If we're on the JOIN screen, ensure we can initiate calls
+            if (currentCallTypeRef.current === CallType.JOIN) {
+              setCanInitiateCall(true);
+              // Also ensure peer connection is ready
+              if (!peerConnectionRef.current) {
+                initializePeerConnection();
+              }
+            }
+          });
+
+          socket.on('connect_error', (error: Error) => {
+            console.log('❌ Reconnection failed:', error.message || error);
+            if (!isMountedRef.current) return;
+            setIsSocketConnected(false);
+            setConnectionStatus('Connection failed - Check server and network');
+          });
+
+          // Reattach all event handlers
+          socket.on('newCall', (data) => {
+            console.log('Incoming call from', data.callerId);
+            if (!isMountedRef.current) return;
+            remoteRTCMessage.current = data.rtcMessage;
+            otherUserId.current = data.callerId;
+            isCaller.current = false;
+            updateCallType(CallType.INCOMING_CALL);
+            startIncomingRingtone();
+            startRingingTimeout();
+          });
+
+          socket.on('callAnswered', async (data) => {
+            console.log('Call answered by', data.callee);
+            if (!isMountedRef.current) return;
+            remoteRTCMessage.current = data.rtcMessage;
+            if (peerConnectionRef.current && remoteRTCMessage.current) {
+              await peerConnectionRef.current.setRemoteDescription(
+                new RTCSessionDescription(remoteRTCMessage.current),
+              );
+              flushPendingCandidates();
+            }
+            // Clear the ringing timeout since call is now answered
+            if (ringingTimeoutRef.current) {
+              clearTimeout(ringingTimeoutRef.current);
+              ringingTimeoutRef.current = null;
+            }
+            stopAllRingSounds();
+            InCallManager.setForceSpeakerphoneOn(true);
+            setIsSpeakerOn(true);
+            InCallManager.start({ media: 'video' });
+            updateCallType(CallType.WEBRTC_ROOM);
+          });
+
+          socket.on('callEnded', handleRemoteHangup);
+          socket.on('callRejected', handleCallRejected);
+
+          socket.on('ICEcandidate', (data) => {
+            console.log('Received ICE candidate from', data.sender);
+            let message = data.rtcMessage;
+            if (peerConnectionRef.current) {
+              if (peerConnectionRef.current.remoteDescription) {
+                const iceCandidate = new RTCIceCandidate({
+                  candidate: message.candidate,
+                  sdpMLineIndex: message.label,
+                  sdpMid: message.id,
+                });
+                peerConnectionRef.current
+                  .addIceCandidate(iceCandidate)
+                  .then(() => {
+                    console.log('ICE candidate added successfully');
+                  })
+                  .catch((err) => {
+                    console.log('Error adding ICE candidate:', err);
+                  });
+              } else {
+                console.log('Remote description not set yet, queueing ICE candidate');
+                pendingRemoteCandidates.current.push(message);
+              }
+            }
+          });
+
+          socketRef.current = socket;
+        }
+      }, 2000);
+    }
+  }
+
   function cleanupCall({ notifyRemote = false, resetForReuse = true, reason = '' }: CleanupCallOptions = {}) {
+    // Don't update state if component is unmounted
+    if (!isMountedRef.current) {
+      console.log('Component unmounted, skipping state updates');
+      return;
+    }
+    
+    // Prevent multiple simultaneous cleanup calls
+    if (isCleaningUpRef.current) {
+      console.log('Cleanup already in progress, skipping duplicate cleanup');
+      return;
+    }
+    
+    isCleaningUpRef.current = true;
     console.log('Cleaning up call state', reason);
-    if (notifyRemote && socketRef.current) {
-      const targetId = otherUserId.current || lastDialedId;
-      if (targetId) {
-        socketRef.current.emit('leaveCall', {
-          targetId,
-        });
+    if (notifyRemote && socketRef.current && socketRef.current.connected) {
+      try {
+        const targetId = otherUserId.current || lastDialedId;
+        if (targetId) {
+          socketRef.current.emit('leaveCall', {
+            targetId,
+          });
+        }
+      } catch (error: any) {
+        console.log('Error notifying remote of leave:', error?.message || error);
       }
     }
     stopAllRingSounds();
@@ -431,6 +785,10 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
             }
           });
         }
+        (peerConnectionRef.current as any).ontrack = null;
+        (peerConnectionRef.current as any).onicecandidate = null;
+        (peerConnectionRef.current as any).onconnectionstatechange = null;
+        (peerConnectionRef.current as any).oniceconnectionstatechange = null;
         peerConnectionRef.current.close();
       } catch (error: any) {
         console.log('Error closing peer connection:', error?.message || error);
@@ -458,10 +816,10 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
     setIsSpeakerOn(true);
     InCallManager.setForceSpeakerphoneOn(true);
 
-    if (resetForReuse) {
-      initializePeerConnection();
-      initializeLocalStream();
-      setConnectionStatus(`Connected to ${currentServerURL.current.replace('http://', '')}`);
+    // Reset state first to allow UI to update (only if mounted)
+    if (isMountedRef.current) {
+      updateCallType(CallType.JOIN);
+      setCanInitiateCall(true); // Reset immediately to allow new calls
     }
 
     const lastDialed = lastDialedId;
@@ -470,9 +828,63 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
       setOtherUserIdInput(lastDialed);
     } else {
       setOtherUserIdInput('');
+      otherUserId.current = null;
     }
-    setType('JOIN');
-    setCanInitiateCall(true);
+
+    // Reconnect socket if needed
+    reconnectSocketIfNeeded();
+
+    if (resetForReuse) {
+      // Reinitialize peer connection and stream asynchronously
+      // Don't block the UI update
+      setTimeout(() => {
+        if (!isMountedRef.current) {
+          isCleaningUpRef.current = false;
+          return;
+        }
+        
+        try {
+          initializePeerConnection();
+          initializeLocalStream().then(() => {
+            // Update connection status based on socket state (only if mounted)
+            if (isMountedRef.current) {
+              if (socketRef.current && socketRef.current.connected) {
+                setConnectionStatus(`Connected to ${currentServerURL.current.replace('http://', '')}`);
+              } else {
+                setConnectionStatus('Reconnecting to server...');
+              }
+              // Ensure canInitiateCall is true after reinitialization
+              setCanInitiateCall(true);
+            }
+            isCleaningUpRef.current = false;
+          }).catch((error: any) => {
+            console.error('Error reinitializing local stream:', error?.message || error);
+            if (isMountedRef.current) {
+              setConnectionStatus('Ready to call - Reinitializing...');
+              // Still allow calls even if stream init fails
+              setCanInitiateCall(true);
+            }
+            isCleaningUpRef.current = false;
+          });
+        } catch (error: any) {
+          console.error('Error during reinitialization:', error?.message || error);
+          if (isMountedRef.current) {
+            setCanInitiateCall(true);
+          }
+          isCleaningUpRef.current = false;
+        }
+      }, 100); // Small delay to ensure cleanup is complete
+    } else {
+      // Update connection status based on socket state (only if mounted)
+      if (isMountedRef.current) {
+        if (socketRef.current && socketRef.current.connected) {
+          setConnectionStatus(`Connected to ${currentServerURL.current.replace('http://', '')}`);
+        } else {
+          setConnectionStatus('Reconnecting to server...');
+        }
+      }
+      isCleaningUpRef.current = false;
+    }
   }
 
   function handleRemoteHangup(data: { sender?: string }) {
@@ -517,21 +929,50 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
   }
 
   function startRingingTimeout() {
+    // Clear any existing timeout first
     if (ringingTimeoutRef.current) {
       clearTimeout(ringingTimeoutRef.current);
+      ringingTimeoutRef.current = null;
     }
-    ringingTimeoutRef.current = setTimeout(() => {
-      console.log('Ringing timeout reached – ending call');
-      stopAllRingSounds();
-      cleanupCall({ notifyRemote: true, reason: 'Ringing timeout', resetForReuse: true });
-      setConnectionStatus('Call timed out (no answer)');
-    }, 30000); // 30 seconds
+    // Only start timeout if we're in a ringing state (not in active call)
+    const currentType = currentCallTypeRef.current;
+    if (currentType === CallType.INCOMING_CALL || currentType === CallType.OUTGOING_CALL) {
+      ringingTimeoutRef.current = setTimeout(() => {
+        // Double-check we're still in ringing state before timing out
+        const stillRinging = currentCallTypeRef.current === CallType.INCOMING_CALL || 
+                           currentCallTypeRef.current === CallType.OUTGOING_CALL;
+        if (stillRinging) {
+          console.log('Ringing timeout reached – ending call');
+          stopAllRingSounds();
+          cleanupCall({ notifyRemote: true, reason: 'Ringing timeout', resetForReuse: true });
+          setConnectionStatus('Call timed out (no answer)');
+        }
+        ringingTimeoutRef.current = null;
+      }, 30000); // 30 seconds
+    }
   }
 
   // Process call (initiate)
   async function processCall() {
+    // Prevent calling during cleanup
+    if (isCleaningUpRef.current) {
+      console.log('Cannot initiate call: Cleanup in progress');
+      return;
+    }
+    
+    // Early validation checks - reset canInitiateCall if validation fails
     if (!peerConnectionRef.current) {
       console.error('Cannot initiate call: Peer connection not ready');
+      setCanInitiateCall(true); // Reset to allow retry
+      setConnectionStatus('Peer connection not ready - Initializing...');
+      // Try to reinitialize peer connection
+      initializePeerConnection();
+      // Wait a bit and allow retry
+      setTimeout(() => {
+        if (isMountedRef.current && peerConnectionRef.current) {
+          setConnectionStatus(`Connected to ${currentServerURL.current.replace('http://', '')}`);
+        }
+      }, 500);
       return;
     }
 
@@ -541,6 +982,9 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
       console.error('1. Server is running');
       console.error('2. SERVER_URL is correct:', SERVER_URL);
       console.error('3. Network connectivity');
+      setCanInitiateCall(true); // Reset to allow retry
+      setConnectionStatus('Not connected to server - Reconnecting...');
+      reconnectSocketIfNeeded();
       return;
     }
 
@@ -549,31 +993,48 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
       return;
     }
 
-    console.log('Initiating call to', otherUserId.current);
-    isCaller.current = true; // We are the caller
     const currentDialTarget =
       otherUserId.current || otherUserIdInput || '';
-    if (currentDialTarget) {
-      setLastDialedId(currentDialTarget);
+    
+    if (!currentDialTarget || !currentDialTarget.trim()) {
+      console.error('Cannot initiate call: No target user ID');
+      setCanInitiateCall(true); // Reset to allow retry
+      return;
     }
+
+    console.log('Initiating call to', currentDialTarget);
+    isCaller.current = true; // We are the caller
+    setLastDialedId(currentDialTarget);
+    otherUserId.current = currentDialTarget; // Ensure it's set
     setCanInitiateCall(false);
     
-    // Start call manager for audio routing and proximity sensor
-    InCallManager.start({ media: 'video' });
-    InCallManager.setForceSpeakerphoneOn(true);
-    setIsSpeakerOn(true);
-    
-    const sessionDescription = await peerConnectionRef.current.createOffer();
-    await peerConnectionRef.current.setLocalDescription(sessionDescription);
+    try {
+      // Start call manager for audio routing and proximity sensor
+      InCallManager.start({ media: 'video' });
+      InCallManager.setForceSpeakerphoneOn(true);
+      setIsSpeakerOn(true);
+      
+      const sessionDescription = await peerConnectionRef.current.createOffer();
+      await peerConnectionRef.current.setLocalDescription(sessionDescription);
 
-    if (otherUserId.current) {
-      sendCall({
-        calleeId: otherUserId.current,
-        rtcMessage: sessionDescription,
-      });
+      if (otherUserId.current) {
+        sendCall({
+          calleeId: otherUserId.current,
+          rtcMessage: sessionDescription,
+        });
+        startOutgoingRingback();
+        startRingingTimeout();
+      } else {
+        console.error('otherUserId is null after setting');
+        setCanInitiateCall(true); // Reset on error
+        cleanupCall({ notifyRemote: false, reason: 'Failed to initiate call', resetForReuse: true });
+      }
+    } catch (error: any) {
+      console.error('Error initiating call:', error?.message || error);
+      setCanInitiateCall(true); // Reset on error
+      cleanupCall({ notifyRemote: false, reason: `Call initiation failed: ${error?.message || 'Unknown error'}`, resetForReuse: true });
+      setConnectionStatus('Call failed - Ready to try again');
     }
-    startOutgoingRingback();
-    startRingingTimeout();
   }
 
   // Process accept (answer call)
@@ -611,7 +1072,7 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
       });
     }
     
-    setType('WEBRTC_ROOM');
+    updateCallType(CallType.WEBRTC_ROOM);
   }
 
   function answerCall(data: { callerId: string; rtcMessage: RTCSessionDescription }) {
@@ -732,7 +1193,12 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
 
   // Destroy WebRTC Connection
   function leave() {
-    cleanupCall({ notifyRemote: true, reason: 'Local hangup' });
+    console.log('User initiated hangup');
+    // Stop all sounds immediately
+    stopAllRingSounds();
+    // Cleanup and reset
+    cleanupCall({ notifyRemote: true, reason: 'Local hangup', resetForReuse: true });
+    setConnectionStatus('Call ended - Ready to call again');
   }
 
   function rejectIncomingCall() {
@@ -810,17 +1276,30 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
               )}
               <TouchableOpacity
                 onPress={() => {
-                  if (!effectiveDialTarget) {
+                  if (!effectiveDialTarget || !effectiveDialTarget.trim()) {
+                    console.error('Cannot call: No target user ID provided');
                     return;
                   }
                   if (!isSocketConnected) {
                     console.error('Cannot call: Socket not connected');
+                    setConnectionStatus('Not connected - Reconnecting...');
+                    reconnectSocketIfNeeded();
                     return;
                   }
-                  otherUserId.current = effectiveDialTarget;
-                  setOtherUserIdInput(effectiveDialTarget);
+                  if (!canInitiateCall) {
+                    console.log('Call already in progress');
+                    return;
+                  }
+                  
+                  // Set the target user ID before calling
+                  otherUserId.current = effectiveDialTarget.trim();
+                  setOtherUserIdInput(effectiveDialTarget.trim());
+                  
+                  // Process the call
                   processCall();
-                  setType('OUTGOING_CALL');
+                  
+                  // Update UI state
+                  updateCallType(CallType.OUTGOING_CALL);
                 }}
                 disabled={
                   !isSocketConnected || !effectiveDialTarget || !canInitiateCall
@@ -995,14 +1474,14 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
     );
   };
 
-  switch (type) {
-    case 'JOIN':
+  switch (currentCallType) {
+    case CallType.JOIN:
       return JoinScreen();
-    case 'INCOMING_CALL':
+    case CallType.INCOMING_CALL:
       return IncomingCallScreen();
-    case 'OUTGOING_CALL':
+    case CallType.OUTGOING_CALL:
       return OutgoingCallScreen();
-    case 'WEBRTC_ROOM':
+    case CallType.WEBRTC_ROOM:
       return WebrtcRoomScreen();
     default:
       return JoinScreen();
