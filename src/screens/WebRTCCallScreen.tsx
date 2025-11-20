@@ -18,7 +18,8 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { PanGestureHandler, GestureHandlerRootView } from 'react-native-gesture-handler';
-import SocketIOClient, { Socket } from 'socket.io-client';
+import { Socket } from 'socket.io-client';
+import { useSocket } from '../context/SocketContext';
 import {
   mediaDevices,
   RTCPeerConnection,
@@ -68,30 +69,37 @@ interface CleanupCallOptions {
   reason?: string;
 }
 
-const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation }) => {
-  const [callerId] = useState<string>(
-    Math.floor(100000 + Math.random() * 900000).toString(),
-  );
+const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation, route }) => {
+  const { socket, isSocketConnected, callerId, connectionStatus } = useSocket();
+  const incomingCallData = route?.params?.incomingCallData;
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [localMicOn, setLocalMicOn] = useState<boolean>(true);
   const [localWebcamOn, setLocalWebcamOn] = useState<boolean>(true);
   const [isSpeakerOn, setIsSpeakerOn] = useState<boolean>(true);
   const [otherUserIdInput, setOtherUserIdInput] = useState<string>('');
-  const [isSocketConnected, setIsSocketConnected] = useState<boolean>(false);
-  const [connectionStatus, setConnectionStatus] = useState<string>('Initializing...');
   const [canInitiateCall, setCanInitiateCall] = useState<boolean>(true);
+  const [isLocalVideoFloating, setIsLocalVideoFloating] = useState<boolean>(true);
   // Minimal render trigger - only increments when screen needs to change
   const [renderTrigger, setRenderTrigger] = useState<number>(0);
 
   const otherUserId = useRef<string | null>(null);
   const remoteRTCMessage = useRef<RTCSessionDescription | null>(null);
+  // socketRef is now coming from context, but we keep a local ref for compatibility with existing code structure if needed, 
+  // or better yet, just use the socket from context directly.
+  // However, existing code uses socketRef.current widely.
+  // Let's keep socketRef but sync it with context socket.
   const socketRef = useRef<Socket | null>(null);
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const isCaller = useRef<boolean>(false);
   const localStreamRef = useRef<MediaStream | null>(null);
   const remoteStreamRef = useRef<MediaStream | null>(null);
   const facingModeRef = useRef<FacingMode>('user');
+
+  // currentServerURL and alternativeURLs are now managed in context, but we might need them locally for display or logic?
+  // Actually connectionStatus comes from context now.
+  // We can remove these refs if they are only used for socket connection logic.
+  // Let's keep them for now to minimize changes, but they won't be used for connection.
   const currentServerURL = useRef<string>(SERVER_URL);
   const alternativeURLs = useRef<string[]>(getAlternativeURLs());
   const connectionAttempts = useRef<number>(0);
@@ -101,25 +109,29 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
   const currentCallTypeRef = useRef<CallType>(CallType.JOIN);
   const isMountedRef = useRef<boolean>(true);
   const isCleaningUpRef = useRef<boolean>(false);
-  
+
   // Animation values for draggable call screen
   const translateY = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(1)).current;
   const scale = useRef(new Animated.Value(1)).current;
   const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
-  
+
   // Animation refs for call screens (moved to parent to avoid hooks violation)
   const outgoingCallScale = useRef(new Animated.Value(1)).current;
   const incomingCallScale = useRef(new Animated.Value(1)).current;
   const incomingCallRotation = useRef(new Animated.Value(0)).current;
-  
+
   // Animation refs for draggable local video (picture-in-picture)
-  const localVideoTranslateX = useRef(new Animated.Value(SCREEN_WIDTH - 140)).current;
-  const localVideoTranslateY = useRef(new Animated.Value(100)).current;
-  const localVideoScale = useRef(new Animated.Value(1)).current;
-  const localVideoStartX = useRef(SCREEN_WIDTH - 140);
-  const localVideoStartY = useRef(100);
-  
+  // Initialize to 0, we will set offset in useEffect
+  const localVideoTranslateX = useRef(new Animated.Value(0)).current;
+  const localVideoTranslateY = useRef(new Animated.Value(0)).current;
+
+  // Set initial position
+  useEffect(() => {
+    localVideoTranslateX.setOffset(SCREEN_WIDTH - 140);
+    localVideoTranslateY.setOffset(100);
+  }, []);
+
   // Helper function to update call type without causing unnecessary re-renders
   const updateCallType = (newType: CallType) => {
     if (currentCallTypeRef.current !== newType) {
@@ -131,20 +143,36 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
 
   // Get current call type (for switch statement)
   const currentCallType = currentCallTypeRef.current;
-  
+
+  // Sync socket from context to local ref
+  useEffect(() => {
+    socketRef.current = socket;
+  }, [socket]);
+
+  // Handle incoming call data from navigation
+  useEffect(() => {
+    if (incomingCallData && socket) {
+      console.log('📱 Handling incoming call data:', incomingCallData);
+      remoteRTCMessage.current = incomingCallData.rtcMessage;
+      otherUserId.current = incomingCallData.callerId;
+      isCaller.current = false;
+      updateCallType(CallType.INCOMING_CALL);
+      startIncomingRingtone();
+      startRingingTimeout();
+    }
+  }, [incomingCallData, socket]);
+
   // Helper function to safely set state only if component is mounted
   const safeSetState = <T,>(setter: (value: T) => void, value: T) => {
     if (isMountedRef.current) {
       setter(value);
     }
   };
-  
+
   // Log available alternatives on mount
   useEffect(() => {
-    console.log('🔧 Available server URLs to try:', alternativeURLs.current.length);
-    console.log('📋 URLs:', alternativeURLs.current);
     isMountedRef.current = true;
-    
+
     return () => {
       isMountedRef.current = false;
     };
@@ -228,9 +256,9 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
       const onBackPress = () => {
         console.log('Back button pressed');
         // If in a call, end it first
-        if (currentCallTypeRef.current === CallType.WEBRTC_ROOM || 
-            currentCallTypeRef.current === CallType.OUTGOING_CALL || 
-            currentCallTypeRef.current === CallType.INCOMING_CALL) {
+        if (currentCallTypeRef.current === CallType.WEBRTC_ROOM ||
+          currentCallTypeRef.current === CallType.OUTGOING_CALL ||
+          currentCallTypeRef.current === CallType.INCOMING_CALL) {
           leave();
           return true; // Prevent default back action
         }
@@ -243,231 +271,21 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
     }, [])
   );
 
-  // Initialize Socket and WebRTC
+  // Initialize WebRTC (PeerConnection and LocalStream) - Run ONCE on mount
   useEffect(() => {
-    // Function to attach common event handlers
-    const attachSocketHandlers = (socket: Socket) => {
-      socket.on('reconnect_attempt', (attemptNumber: number) => {
-        console.log('Reconnection attempt:', attemptNumber);
-      });
-
-      socket.on('reconnect', (attemptNumber: number) => {
-        console.log('Reconnected after', attemptNumber, 'attempts');
-        if (!isMountedRef.current) return;
-        setIsSocketConnected(true);
-        // If we're on the JOIN screen, ensure we can initiate calls
-        if (currentCallTypeRef.current === CallType.JOIN) {
-          console.log('Resetting canInitiateCall after reconnection');
-          setCanInitiateCall(true);
-          // Also ensure peer connection is ready
-          if (!peerConnectionRef.current) {
-            initializePeerConnection();
-          }
-        }
-        setConnectionStatus(`Connected to ${currentServerURL.current.replace('http://', '')}`);
-      });
-
-      socket.on('reconnect_error', (error: Error) => {
-        console.log('Reconnection error:', error.message || error);
-      });
-
-      socket.on('reconnect_failed', () => {
-        console.log('Failed to reconnect to server');
-      });
-
-      socket.on('disconnect', (reason: string) => {
-        console.log('Socket disconnected:', reason);
-        if (!isMountedRef.current) return;
-        setIsSocketConnected(false);
-        
-        // If we're in an active call, cleanup and reset
-        const currentType = currentCallTypeRef.current;
-        if (currentType === CallType.WEBRTC_ROOM || currentType === CallType.OUTGOING_CALL || currentType === CallType.INCOMING_CALL) {
-          console.log('Socket disconnected during call, cleaning up...');
-          cleanupCall({ notifyRemote: false, reason: 'Socket disconnected', resetForReuse: true });
-        }
-        
-        if (reason === 'io server disconnect') {
-          // Server disconnected the socket, reconnect manually (only if mounted)
-          if (isMountedRef.current) {
-            socket.connect();
-          }
-        } else {
-          // For other disconnection reasons, try to reconnect (only if mounted)
-          if (isMountedRef.current) {
-            setTimeout(() => {
-              if (isMountedRef.current && !socket.connected) {
-                socket.connect();
-              }
-            }, 1000);
-          }
-        }
-      });
-    };
-
-    // Function to create socket connection with all handlers
-    const createSocket = (url: string) => {
-      console.log('🔌 Attempting to connect to:', url, 'with callerId:', callerId);
-      const socket = SocketIOClient(url, {
-        transports: ['websocket', 'polling'], // Fallback to polling if websocket fails
-        reconnection: true,
-        reconnectionAttempts: 3,
-        reconnectionDelay: 1000,
-        timeout: 10000,
-        query: {
-          callerId,
-        },
-      });
-
-      socket.on('connect', () => {
-        console.log('✅ Socket connected with ID:', socket.id, 'Transport:', socket.io.engine.transport.name);
-        console.log('✅ Connected to server:', url);
-        if (!isMountedRef.current) return;
-        currentServerURL.current = url;
-        setIsSocketConnected(true);
-        connectionAttempts.current = 0;
-        setConnectionStatus(`Connected to ${url.replace('http://', '')}`);
-        // If we're on the JOIN screen, ensure we can initiate calls
-        if (currentCallTypeRef.current === CallType.JOIN) {
-          setCanInitiateCall(true);
-        }
-      });
-
-      socket.on('connect_error', (error: Error) => {
-        console.log('❌ Connection failed to:', url);
-        console.log('Error:', error.message || error);
-        
-        // Try next alternative URL
-        if (connectionAttempts.current < alternativeURLs.current.length) {
-          const nextURL = alternativeURLs.current[connectionAttempts.current];
-          connectionAttempts.current++;
-          const attemptText = `Trying ${connectionAttempts.current}/${alternativeURLs.current.length}: ${nextURL.replace('http://', '')}`;
-          console.log(`🔄 ${attemptText}`);
-          console.log(`📊 Remaining attempts: ${alternativeURLs.current.length - connectionAttempts.current}`);
-          setConnectionStatus(attemptText);
-          
-          // Disconnect current socket
-          socket.disconnect();
-          
-          // Try next URL after a short delay
-          setTimeout(() => {
-            const newSocket = createSocket(nextURL);
-            attachSocketHandlers(newSocket);
-            socketRef.current = newSocket;
-          }, 1500); // Slightly longer delay to ensure previous socket is cleaned up
-        } else {
-          // All URLs failed
-          console.log('❌ All connection attempts failed');
-          console.log(`📊 Tried ${connectionAttempts.current} URLs`);
-          console.log('📋 Troubleshooting:');
-          console.log('1. Make sure server is running: cd server && npm start');
-          console.log('2. Find your computer IP: ifconfig (Mac/Linux) or ipconfig (Windows)');
-          console.log('3. Ensure both devices are on the same Wi-Fi network');
-          console.log('4. Check firewall allows connections on port 3500');
-          console.log('5. Try manually setting SERVER_IP environment variable');
-          if (isMountedRef.current) {
-            setIsSocketConnected(false);
-            setConnectionStatus('Connection failed - Check server and network');
-          }
-        }
-      });
-
-      // Attach other event handlers
-      attachSocketHandlers(socket);
-
-      return socket;
-    };
-
-    // Start with primary URL
-    const socket = createSocket(SERVER_URL);
-    socketRef.current = socket;
-
     initializePeerConnection();
-
-    // Socket event listeners
-    socket.on('newCall', (data) => {
-      console.log('Incoming call from', data.callerId);
-      if (!isMountedRef.current) return;
-      remoteRTCMessage.current = data.rtcMessage;
-      otherUserId.current = data.callerId;
-      isCaller.current = false; // We are the callee
-      updateCallType(CallType.INCOMING_CALL);
-      startIncomingRingtone();
-      startRingingTimeout();
-    });
-
-    socket.on('callAnswered', async (data) => {
-      console.log('Call answered by', data.callee);
-      if (!isMountedRef.current) return;
-      remoteRTCMessage.current = data.rtcMessage;
-      if (peerConnectionRef.current && remoteRTCMessage.current) {
-        await peerConnectionRef.current.setRemoteDescription(
-          new RTCSessionDescription(remoteRTCMessage.current),
-        );
-        flushPendingCandidates();
-      }
-      // Clear the ringing timeout since call is now answered
-      if (ringingTimeoutRef.current) {
-        clearTimeout(ringingTimeoutRef.current);
-        ringingTimeoutRef.current = null;
-      }
-      stopAllRingSounds();
-      InCallManager.setForceSpeakerphoneOn(true);
-      setIsSpeakerOn(true);
-      // Ensure call manager is started when call is answered
-      InCallManager.start({ media: 'video' });
-      updateCallType(CallType.WEBRTC_ROOM);
-      // Ensure local stream is initialized
-      if (!localStreamRef.current) {
-        initializeLocalStream();
-      }
-      // Reset local video position
-      localVideoTranslateX.setValue(SCREEN_WIDTH - 140);
-      localVideoTranslateY.setValue(100);
-      localVideoStartX.current = SCREEN_WIDTH - 140;
-      localVideoStartY.current = 100;
-    });
-    socket.on('callEnded', handleRemoteHangup);
-    socket.on('callRejected', handleCallRejected);
-
-    socket.on('ICEcandidate', (data) => {
-      console.log('Received ICE candidate from', data.sender);
-      if (!isMountedRef.current) return;
-      let message = data.rtcMessage;
-      if (peerConnectionRef.current) {
-        if (peerConnectionRef.current.remoteDescription) {
-          const iceCandidate = new RTCIceCandidate({
-            candidate: message.candidate,
-            sdpMLineIndex: message.label,
-            sdpMid: message.id,
-          });
-          peerConnectionRef.current
-            .addIceCandidate(iceCandidate)
-            .then(() => {
-              console.log('ICE candidate added successfully');
-            })
-            .catch((err) => {
-              console.log('Error adding ICE candidate:', err);
-            });
-        } else {
-          console.log('Remote description not set yet, queueing ICE candidate');
-          pendingRemoteCandidates.current.push(message);
-        }
-      }
-    });
-
     initializeLocalStream();
 
     return () => {
-      console.log('🧹 Component unmounting - cleaning up...');
+      console.log('🧹 Component unmounting - cleaning up WebRTC...');
       isMountedRef.current = false;
-      
+
       // Stop all timers first
       if (ringingTimeoutRef.current) {
         clearTimeout(ringingTimeoutRef.current);
         ringingTimeoutRef.current = null;
       }
-      
+
       // Stop all ring sounds
       try {
         InCallManager.stopRingback();
@@ -476,7 +294,7 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
       } catch (error: any) {
         console.log('Error stopping InCallManager:', error?.message || error);
       }
-      
+
       // Cleanup peer connection
       if (peerConnectionRef.current) {
         try {
@@ -491,7 +309,7 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
           peerConnectionRef.current = null;
         }
       }
-      
+
       // Cleanup streams
       if (localStreamRef.current) {
         try {
@@ -501,7 +319,7 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
         }
         localStreamRef.current = null;
       }
-      
+
       if (remoteStreamRef.current) {
         try {
           remoteStreamRef.current.getTracks().forEach((track) => track.stop?.());
@@ -510,38 +328,143 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
         }
         remoteStreamRef.current = null;
       }
-      
-      // Cleanup socket - use socketRef.current to get the actual current socket
-      if (socketRef.current) {
-        try {
-          // Remove all event listeners safely
-          socketRef.current.off('callEnded');
-          socketRef.current.off('callRejected');
-          socketRef.current.off('newCall');
-          socketRef.current.off('callAnswered');
-          socketRef.current.off('ICEcandidate');
-          socketRef.current.off('connect');
-          socketRef.current.off('connect_error');
-          socketRef.current.off('disconnect');
-          socketRef.current.off('reconnect');
-          socketRef.current.off('reconnect_attempt');
-          socketRef.current.off('reconnect_error');
-          socketRef.current.off('reconnect_failed');
-          
-          // Disconnect socket
-          if (socketRef.current.connected) {
-            socketRef.current.disconnect();
-          }
-        } catch (error: any) {
-          console.log('Error cleaning up socket:', error?.message || error);
-        } finally {
-          socketRef.current = null;
-        }
-      }
-      
-      console.log('✅ Cleanup complete');
+
+      console.log('✅ WebRTC Cleanup complete');
     };
   }, []);
+
+  // Attach Socket Listeners - Run when socket changes
+  useEffect(() => {
+    if (!socket) return;
+
+    console.log('🔌 Attaching socket listeners to ID:', socket.id);
+
+    // Function to attach screen-specific handlers
+    const attachScreenHandlers = (socketInstance: Socket) => {
+      // Remove existing listeners to avoid duplicates
+      socketInstance.off('callAnswered');
+      socketInstance.off('callEnded');
+      socketInstance.off('callRejected');
+      socketInstance.off('ICEcandidate');
+
+      socketInstance.on('callAnswered', async (data) => {
+        console.log('📞 Call answered by', data.callee);
+        if (!isMountedRef.current) return;
+
+        remoteRTCMessage.current = data.rtcMessage;
+
+        if (!peerConnectionRef.current) {
+          console.error('❌ PeerConnection is null in callAnswered!');
+          return;
+        }
+
+        if (remoteRTCMessage.current) {
+          try {
+            const currentState = peerConnectionRef.current.signalingState;
+            console.log('📊 Current signaling state:', currentState);
+
+            // Only set remote description if we're in the correct state
+            // For an answer, we should be in 'have-local-offer' state
+            if (currentState === 'have-local-offer') {
+              await peerConnectionRef.current.setRemoteDescription(
+                new RTCSessionDescription(remoteRTCMessage.current),
+              );
+              console.log('✅ Remote description set (Answer)');
+              flushPendingCandidates();
+            } else if (currentState === 'stable') {
+              console.warn('⚠️ Already in stable state, skipping setRemoteDescription');
+              // If already stable, the connection might already be established
+              // Just flush any pending candidates
+              flushPendingCandidates();
+            } else {
+              console.error('❌ Unexpected signaling state for answer:', currentState);
+            }
+          } catch (error: any) {
+            console.error('❌ Error setting remote description:', error);
+          }
+        } else {
+          console.error('❌ Remote RTC message is missing in callAnswered');
+        }
+
+        // Clear the ringing timeout since call is now answered
+        if (ringingTimeoutRef.current) {
+          clearTimeout(ringingTimeoutRef.current);
+          ringingTimeoutRef.current = null;
+        }
+        stopAllRingSounds();
+        InCallManager.setForceSpeakerphoneOn(true);
+        setIsSpeakerOn(true);
+        // Ensure call manager is started when call is answered
+        InCallManager.start({ media: 'video' });
+        updateCallType(CallType.WEBRTC_ROOM);
+
+        // Reset local video position
+        localVideoTranslateX.setOffset(SCREEN_WIDTH - 140);
+        localVideoTranslateX.setValue(0);
+        localVideoTranslateY.setOffset(100);
+        localVideoTranslateY.setValue(0);
+      });
+
+      socketInstance.on('callEnded', handleRemoteHangup);
+      socketInstance.on('callRejected', handleCallRejected);
+
+      socketInstance.on('ICEcandidate', async (data) => {
+        console.log('❄️ Received ICE candidate from', data.sender);
+        if (!isMountedRef.current) return;
+
+        let message = data.rtcMessage;
+
+        if (peerConnectionRef.current) {
+          if (peerConnectionRef.current.remoteDescription) {
+            const iceCandidate = new RTCIceCandidate({
+              candidate: message.candidate,
+              sdpMLineIndex: message.label,
+              sdpMid: message.id,
+            });
+            try {
+              await peerConnectionRef.current.addIceCandidate(iceCandidate);
+              console.log('✅ ICE candidate added successfully');
+            } catch (err) {
+              console.error('❌ Error adding ICE candidate:', err);
+            }
+          } else {
+            console.log('⏳ Remote description not set yet, queueing ICE candidate');
+            pendingRemoteCandidates.current.push(message);
+          }
+        }
+      });
+    };
+
+    attachScreenHandlers(socket);
+
+    return () => {
+      // Cleanup socket listeners only
+      if (socket) {
+        try {
+          socket.off('callEnded');
+          socket.off('callRejected');
+          socket.off('callAnswered');
+          socket.off('ICEcandidate');
+          console.log('🔌 Socket listeners detached');
+        } catch (error: any) {
+          console.log('Error cleaning up socket listeners:', error?.message || error);
+        }
+      }
+    };
+  }, [socket]);
+
+  // Removed local createSocket and attachSocketHandlers functions as they are replaced by context
+
+  /*
+  // Function to reconnect socket if disconnected
+  function reconnectSocketIfNeeded() {
+     // Global socket handles reconnection automatically
+  }
+  */
+
+  // We need to keep initializePeerConnection and other helper functions
+  // but remove the socket creation part.
+
 
   async function getVideoSourceId(facingMode: FacingMode): Promise<string | null> {
     try {
@@ -620,17 +543,17 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
     (peerConnection as any).onconnectionstatechange = () => {
       const state = peerConnection.connectionState;
       console.log('Peer connection state changed:', state);
-      
+
       if (state === 'disconnected' || state === 'failed' || state === 'closed') {
         console.log('Peer connection lost, cleaning up call');
         // Only cleanup if we're in an active call state and not already cleaning up
         const currentType = currentCallTypeRef.current;
-        if (!isCleaningUpRef.current && 
-            (currentType === CallType.WEBRTC_ROOM || currentType === CallType.OUTGOING_CALL || currentType === CallType.INCOMING_CALL)) {
+        if (!isCleaningUpRef.current &&
+          (currentType === CallType.WEBRTC_ROOM || currentType === CallType.OUTGOING_CALL || currentType === CallType.INCOMING_CALL)) {
           // Reset canInitiateCall immediately
           if (isMountedRef.current) {
             setCanInitiateCall(true);
-            setConnectionStatus('Call disconnected - Ready to call again');
+            // setConnectionStatus('Call disconnected - Ready to call again');
           }
           cleanupCall({ notifyRemote: true, reason: `Connection ${state}`, resetForReuse: true });
         }
@@ -641,17 +564,17 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
     (peerConnection as any).oniceconnectionstatechange = () => {
       const iceState = peerConnection.iceConnectionState;
       console.log('ICE connection state changed:', iceState);
-      
+
       if (iceState === 'disconnected' || iceState === 'failed' || iceState === 'closed') {
         console.log('ICE connection lost');
         // Only cleanup if we're in an active call state and not already cleaning up
         const currentType = currentCallTypeRef.current;
-        if (!isCleaningUpRef.current && 
-            (currentType === CallType.WEBRTC_ROOM || currentType === CallType.OUTGOING_CALL || currentType === CallType.INCOMING_CALL)) {
+        if (!isCleaningUpRef.current &&
+          (currentType === CallType.WEBRTC_ROOM || currentType === CallType.OUTGOING_CALL || currentType === CallType.INCOMING_CALL)) {
           // Reset canInitiateCall immediately
           if (isMountedRef.current) {
             setCanInitiateCall(true);
-            setConnectionStatus('Call disconnected - Ready to call again');
+            // setConnectionStatus('Call disconnected - Ready to call again');
           }
           cleanupCall({ notifyRemote: true, reason: `ICE connection ${iceState}`, resetForReuse: true });
         }
@@ -726,125 +649,10 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
   // Function to reconnect socket if disconnected
   function reconnectSocketIfNeeded() {
     if (!isMountedRef.current) return;
-    if (socketRef.current && !socketRef.current.connected) {
+    if (socket && !socket.connected) {
       console.log('Socket disconnected, attempting to reconnect...');
-      setConnectionStatus('Reconnecting to server...');
-      
-      // Try to reconnect the existing socket
-      socketRef.current.connect();
-      
-      // If reconnection fails, create a new socket connection
-      setTimeout(() => {
-        if (!isMountedRef.current) return;
-        if (socketRef.current && !socketRef.current.connected) {
-          console.log('Socket reconnection failed, creating new connection...');
-          const socket = SocketIOClient(currentServerURL.current, {
-            transports: ['websocket', 'polling'],
-            reconnection: true,
-            reconnectionAttempts: 3,
-            reconnectionDelay: 1000,
-            timeout: 10000,
-            query: {
-              callerId,
-            },
-          });
-
-          socket.on('connect', () => {
-            console.log('✅ Socket reconnected with ID:', socket.id);
-            if (!isMountedRef.current) return;
-            setIsSocketConnected(true);
-            setConnectionStatus(`Connected to ${currentServerURL.current.replace('http://', '')}`);
-            // If we're on the JOIN screen, ensure we can initiate calls
-            if (currentCallTypeRef.current === CallType.JOIN) {
-              setCanInitiateCall(true);
-              // Also ensure peer connection is ready
-              if (!peerConnectionRef.current) {
-                initializePeerConnection();
-              }
-            }
-          });
-
-          socket.on('connect_error', (error: Error) => {
-            console.log('❌ Reconnection failed:', error.message || error);
-            if (!isMountedRef.current) return;
-            setIsSocketConnected(false);
-            setConnectionStatus('Connection failed - Check server and network');
-          });
-
-          // Reattach all event handlers
-          socket.on('newCall', (data) => {
-            console.log('Incoming call from', data.callerId);
-            if (!isMountedRef.current) return;
-            remoteRTCMessage.current = data.rtcMessage;
-            otherUserId.current = data.callerId;
-            isCaller.current = false;
-            updateCallType(CallType.INCOMING_CALL);
-            startIncomingRingtone();
-            startRingingTimeout();
-          });
-
-          socket.on('callAnswered', async (data) => {
-            console.log('Call answered by', data.callee);
-            if (!isMountedRef.current) return;
-            remoteRTCMessage.current = data.rtcMessage;
-            if (peerConnectionRef.current && remoteRTCMessage.current) {
-              await peerConnectionRef.current.setRemoteDescription(
-                new RTCSessionDescription(remoteRTCMessage.current),
-              );
-              flushPendingCandidates();
-            }
-            // Clear the ringing timeout since call is now answered
-            if (ringingTimeoutRef.current) {
-              clearTimeout(ringingTimeoutRef.current);
-              ringingTimeoutRef.current = null;
-            }
-            stopAllRingSounds();
-            InCallManager.setForceSpeakerphoneOn(true);
-            setIsSpeakerOn(true);
-            InCallManager.start({ media: 'video' });
-            updateCallType(CallType.WEBRTC_ROOM);
-            // Ensure local stream is initialized
-            if (!localStreamRef.current) {
-              initializeLocalStream();
-            }
-            // Reset local video position
-            localVideoTranslateX.setValue(SCREEN_WIDTH - 140);
-            localVideoTranslateY.setValue(100);
-            localVideoStartX.current = SCREEN_WIDTH - 140;
-            localVideoStartY.current = 100;
-          });
-
-          socket.on('callEnded', handleRemoteHangup);
-          socket.on('callRejected', handleCallRejected);
-
-          socket.on('ICEcandidate', (data) => {
-            console.log('Received ICE candidate from', data.sender);
-            let message = data.rtcMessage;
-            if (peerConnectionRef.current) {
-              if (peerConnectionRef.current.remoteDescription) {
-                const iceCandidate = new RTCIceCandidate({
-                  candidate: message.candidate,
-                  sdpMLineIndex: message.label,
-                  sdpMid: message.id,
-                });
-                peerConnectionRef.current
-                  .addIceCandidate(iceCandidate)
-                  .then(() => {
-                    console.log('ICE candidate added successfully');
-                  })
-                  .catch((err) => {
-                    console.log('Error adding ICE candidate:', err);
-                  });
-              } else {
-                console.log('Remote description not set yet, queueing ICE candidate');
-                pendingRemoteCandidates.current.push(message);
-              }
-            }
-          });
-
-          socketRef.current = socket;
-        }
-      }, 2000);
+      // Global socket handles reconnection, but we can trigger it manually if needed
+      socket.connect();
     }
   }
 
@@ -854,13 +662,13 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
       console.log('Component unmounted, skipping state updates');
       return;
     }
-    
+
     // Prevent multiple simultaneous cleanup calls
     if (isCleaningUpRef.current) {
       console.log('Cleanup already in progress, skipping duplicate cleanup');
       return;
     }
-    
+
     isCleaningUpRef.current = true;
     console.log('Cleaning up call state', reason);
     if (notifyRemote && socketRef.current && socketRef.current.connected) {
@@ -954,16 +762,16 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
           isCleaningUpRef.current = false;
           return;
         }
-        
+
         try {
           initializePeerConnection();
           initializeLocalStream().then(() => {
             // Update connection status based on socket state (only if mounted)
             if (isMountedRef.current) {
               if (socketRef.current && socketRef.current.connected) {
-                setConnectionStatus(`Connected to ${currentServerURL.current.replace('http://', '')}`);
+                // setConnectionStatus(`Connected to ${currentServerURL.current.replace('http://', '')}`);
               } else {
-                setConnectionStatus('Reconnecting to server...');
+                // setConnectionStatus('Reconnecting to server...');
               }
               // Ensure canInitiateCall is true after reinitialization
               setCanInitiateCall(true);
@@ -972,7 +780,7 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
           }).catch((error: any) => {
             console.error('Error reinitializing local stream:', error?.message || error);
             if (isMountedRef.current) {
-              setConnectionStatus('Ready to call - Reinitializing...');
+              // setConnectionStatus('Ready to call - Reinitializing...');
               // Still allow calls even if stream init fails
               setCanInitiateCall(true);
             }
@@ -990,9 +798,9 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
       // Update connection status based on socket state (only if mounted)
       if (isMountedRef.current) {
         if (socketRef.current && socketRef.current.connected) {
-          setConnectionStatus(`Connected to ${currentServerURL.current.replace('http://', '')}`);
+          // setConnectionStatus(`Connected to ${currentServerURL.current.replace('http://', '')}`);
         } else {
-          setConnectionStatus('Reconnecting to server...');
+          // setConnectionStatus('Reconnecting to server...');
         }
       }
       isCleaningUpRef.current = false;
@@ -1002,13 +810,13 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
   function handleRemoteHangup(data: { sender?: string }) {
     console.log('Remote user ended the call', data?.sender);
     cleanupCall({ notifyRemote: false, reason: 'Remote hangup' });
-    setConnectionStatus('Call ended by remote user');
+    // setConnectionStatus('Call ended by remote user');
   }
 
   function handleCallRejected(data: { callee?: string }) {
     console.log('Call rejected by', data?.callee);
     cleanupCall({ notifyRemote: false, reason: 'Call rejected' });
-    setConnectionStatus('Call rejected by other user');
+    // setConnectionStatus('Call rejected by other user');
   }
 
   function stopAllRingSounds() {
@@ -1051,13 +859,13 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
     if (currentType === CallType.INCOMING_CALL || currentType === CallType.OUTGOING_CALL) {
       ringingTimeoutRef.current = setTimeout(() => {
         // Double-check we're still in ringing state before timing out
-        const stillRinging = currentCallTypeRef.current === CallType.INCOMING_CALL || 
-                           currentCallTypeRef.current === CallType.OUTGOING_CALL;
+        const stillRinging = currentCallTypeRef.current === CallType.INCOMING_CALL ||
+          currentCallTypeRef.current === CallType.OUTGOING_CALL;
         if (stillRinging) {
           console.log('Ringing timeout reached – ending call');
           stopAllRingSounds();
           cleanupCall({ notifyRemote: true, reason: 'Ringing timeout', resetForReuse: true });
-          setConnectionStatus('Call timed out (no answer)');
+          // setConnectionStatus('Call timed out (no answer)');
         }
         ringingTimeoutRef.current = null;
       }, 30000); // 30 seconds
@@ -1071,18 +879,18 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
       console.log('Cannot initiate call: Cleanup in progress');
       return;
     }
-    
+
     // Early validation checks - reset canInitiateCall if validation fails
     if (!peerConnectionRef.current) {
       console.error('Cannot initiate call: Peer connection not ready');
       setCanInitiateCall(true); // Reset to allow retry
-      setConnectionStatus('Peer connection not ready - Initializing...');
+      // setConnectionStatus('Peer connection not ready - Initializing...');
       // Try to reinitialize peer connection
       initializePeerConnection();
       // Wait a bit and allow retry
       setTimeout(() => {
         if (isMountedRef.current && peerConnectionRef.current) {
-          setConnectionStatus(`Connected to ${currentServerURL.current.replace('http://', '')}`);
+          // setConnectionStatus(`Connected to ${currentServerURL.current.replace('http://', '')}`);
         }
       }, 500);
       return;
@@ -1095,7 +903,7 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
       console.error('2. SERVER_URL is correct:', SERVER_URL);
       console.error('3. Network connectivity');
       setCanInitiateCall(true); // Reset to allow retry
-      setConnectionStatus('Not connected to server - Reconnecting...');
+      // setConnectionStatus('Not connected to server - Reconnecting...');
       reconnectSocketIfNeeded();
       return;
     }
@@ -1107,7 +915,7 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
 
     const currentDialTarget =
       otherUserId.current || otherUserIdInput || '';
-    
+
     if (!currentDialTarget || !currentDialTarget.trim()) {
       console.error('Cannot initiate call: No target user ID');
       setCanInitiateCall(true); // Reset to allow retry
@@ -1119,13 +927,13 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
     setLastDialedId(currentDialTarget);
     otherUserId.current = currentDialTarget; // Ensure it's set
     setCanInitiateCall(false);
-    
+
     try {
       // Start call manager for audio routing and proximity sensor
       InCallManager.start({ media: 'video' });
       InCallManager.setForceSpeakerphoneOn(true);
       setIsSpeakerOn(true);
-      
+
       const sessionDescription = await peerConnectionRef.current.createOffer();
       await peerConnectionRef.current.setLocalDescription(sessionDescription);
 
@@ -1145,7 +953,7 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
       console.error('Error initiating call:', error?.message || error);
       setCanInitiateCall(true); // Reset on error
       cleanupCall({ notifyRemote: false, reason: `Call initiation failed: ${error?.message || 'Unknown error'}`, resetForReuse: true });
-      setConnectionStatus('Call failed - Ready to try again');
+      // setConnectionStatus('Call failed - Ready to try again');
     }
   }
 
@@ -1155,19 +963,38 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
 
     console.log('Answering call from', otherUserId.current);
     isCaller.current = false; // We are the callee
-    await peerConnectionRef.current.setRemoteDescription(
-      new RTCSessionDescription(remoteRTCMessage.current),
-    );
+
+    try {
+      const currentState = peerConnectionRef.current.signalingState;
+      console.log('📊 Current signaling state before setting offer:', currentState);
+
+      // For an offer, we should be in 'stable' state
+      if (currentState === 'stable' || currentState === 'have-remote-offer') {
+        await peerConnectionRef.current.setRemoteDescription(
+          new RTCSessionDescription(remoteRTCMessage.current),
+        );
+        console.log('✅ Remote description set (Offer)');
+      } else {
+        console.error('❌ Unexpected signaling state for offer:', currentState);
+        // Try to recover by setting anyway
+        await peerConnectionRef.current.setRemoteDescription(
+          new RTCSessionDescription(remoteRTCMessage.current),
+        );
+      }
+    } catch (error: any) {
+      console.error('❌ Error setting remote description in processAccept:', error);
+      // Don't return, try to continue
+    }
     flushPendingCandidates();
     if (ringingTimeoutRef.current) {
       clearTimeout(ringingTimeoutRef.current);
       ringingTimeoutRef.current = null;
     }
-      stopAllRingSounds();
-      if (ringingTimeoutRef.current) {
-        clearTimeout(ringingTimeoutRef.current);
-        ringingTimeoutRef.current = null;
-      }
+    stopAllRingSounds();
+    if (ringingTimeoutRef.current) {
+      clearTimeout(ringingTimeoutRef.current);
+      ringingTimeoutRef.current = null;
+    }
 
     const sessionDescription = await peerConnectionRef.current.createAnswer();
     await peerConnectionRef.current.setLocalDescription(sessionDescription);
@@ -1183,25 +1010,28 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
         rtcMessage: sessionDescription,
       });
     }
-    
+
     updateCallType(CallType.WEBRTC_ROOM);
     // Ensure local stream is initialized
     if (!localStreamRef.current) {
       initializeLocalStream();
     }
     // Reset local video position
-    localVideoTranslateX.setValue(SCREEN_WIDTH - 140);
-    localVideoTranslateY.setValue(100);
-    localVideoStartX.current = SCREEN_WIDTH - 140;
-    localVideoStartY.current = 100;
+    localVideoTranslateX.setOffset(SCREEN_WIDTH - 140);
+    localVideoTranslateX.setValue(0);
+    localVideoTranslateY.setOffset(100);
+    localVideoTranslateY.setValue(0);
   }
 
   function answerCall(data: { callerId: string; rtcMessage: RTCSessionDescription }) {
     if (socketRef.current && socketRef.current.connected) {
+      console.log('📤 Sending answerCall to:', data.callerId);
       socketRef.current.emit('answerCall', data);
-      console.log('Answer signal sent to server');
     } else {
-      console.error('Cannot answer call: Socket not connected');
+      console.error('❌ Cannot answer call: Socket not connected', {
+        socketExists: !!socketRef.current,
+        connected: socketRef.current?.connected
+      });
     }
   }
 
@@ -1319,7 +1149,7 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
     stopAllRingSounds();
     // Cleanup and reset
     cleanupCall({ notifyRemote: true, reason: 'Local hangup', resetForReuse: true });
-    setConnectionStatus('Call ended - Ready to call again');
+    // setConnectionStatus('Call ended - Ready to call again');
   }
 
   function rejectIncomingCall() {
@@ -1331,7 +1161,7 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
     }
     stopAllRingSounds();
     cleanupCall({ notifyRemote: false, reason: 'Rejected incoming call' });
-    setConnectionStatus('You rejected the call');
+    // setConnectionStatus('You rejected the call');
   }
 
   const JoinScreen = () => {
@@ -1339,7 +1169,7 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
       (otherUserIdInput && otherUserIdInput.trim()) ||
       lastDialedId ||
       '';
-    
+
     const statusIndicatorStyle: StyleProp<ViewStyle> = [
       styles.statusIndicator,
       { backgroundColor: isSocketConnected ? colors.success : colors.danger },
@@ -1403,7 +1233,7 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
                   }
                   if (!isSocketConnected) {
                     console.error('Cannot call: Socket not connected');
-                    setConnectionStatus('Not connected - Reconnecting...');
+                    // setConnectionStatus('Not connected - Reconnecting...');
                     reconnectSocketIfNeeded();
                     return;
                   }
@@ -1411,14 +1241,14 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
                     console.log('Call already in progress');
                     return;
                   }
-                  
+
                   // Set the target user ID before calling
                   otherUserId.current = effectiveDialTarget.trim();
                   setOtherUserIdInput(effectiveDialTarget.trim());
-                  
+
                   // Process the call
                   processCall();
-                  
+
                   // Update UI state
                   updateCallType(CallType.OUTGOING_CALL);
                 }}
@@ -1430,10 +1260,10 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
                   {!isSocketConnected
                     ? 'Connecting...'
                     : !effectiveDialTarget
-                    ? 'Enter Caller ID'
-                    : canInitiateCall
-                    ? 'Call Now'
-                    : 'Preparing...'}
+                      ? 'Enter Caller ID'
+                      : canInitiateCall
+                        ? 'Call Now'
+                        : 'Preparing...'}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1521,6 +1351,13 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
   };
 
   const WebrtcRoomScreen = () => {
+    console.log('Rendering WebrtcRoomScreen', {
+      currentCallType: currentCallTypeRef.current,
+      hasLocalStream: !!(localStream || localStreamRef.current),
+      hasRemoteStream: !!remoteStream,
+      isLocalVideoFloating
+    });
+
     const micIconStyle: StyleProp<ViewStyle> = [
       styles.iconButtonBorder,
       { backgroundColor: !localMicOn ? colors.white : 'transparent' },
@@ -1550,7 +1387,7 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
     const onHandlerStateChange = (event: any) => {
       if (event.nativeEvent.oldState === 4) { // ACTIVE state ended
         const { translationY, velocityY } = event.nativeEvent;
-        
+
         // If dragged down more than 150px or with high velocity, dismiss
         if (translationY > 150 || velocityY > 1000) {
           Animated.parallel([
@@ -1629,61 +1466,77 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
     );
 
     const onLocalVideoHandlerStateChange = (event: any) => {
-      if (event.nativeEvent.oldState === 1) {
-        // BEGAN state - store current position
-        const currentTranslateX = (localVideoTranslateX as any).__getValue ? (localVideoTranslateX as any).__getValue() : 0;
-        const currentTranslateY = (localVideoTranslateY as any).__getValue ? (localVideoTranslateY as any).__getValue() : 0;
-        localVideoStartX.current = SCREEN_WIDTH - 140 + currentTranslateX;
-        localVideoStartY.current = 100 + currentTranslateY;
-      } else if (event.nativeEvent.oldState === 4) {
-        // ACTIVE state ended - snap to edges
-        const { translationX, translationY } = event.nativeEvent;
-        const currentX = localVideoStartX.current + translationX;
-        const currentY = localVideoStartY.current + translationY;
+      if (event.nativeEvent.oldState === 4) { // ACTIVE state ended
+        // Flatten offset to get absolute position
+        localVideoTranslateX.flattenOffset();
+        localVideoTranslateY.flattenOffset();
 
-        // Snap to nearest edge
-        let targetX = currentX;
-        let targetY = currentY;
+        // Get current absolute position (approximate since we can't read async value synchronously easily, 
+        // but for snapping logic we can calculate from the event)
+        // Actually, we can just use the translation + offset logic if we tracked it, 
+        // but since we flattened, the Animated.Value now holds the absolute position.
+        // However, we can't read it synchronously on the JS thread if it's driven natively.
+        // So we rely on the event's absolute coordinates or calculate from translation.
 
-        // Constrain to screen bounds
-        const videoWidth = 120;
-        const videoHeight = 160;
+        // Better approach for snapping with Native Driver:
+        // We can't easily read the value to decide where to snap.
+        // So we'll just snap to the nearest corner based on the drag release position relative to screen.
+
+        const { absoluteX, absoluteY } = event.nativeEvent;
+        // absoluteX/Y are raw touch coordinates, not view coordinates.
+        // Let's use the translation + known start position logic for calculation, 
+        // but for the animation we use the Animated.Value.
+
+        // Wait, we need to know where it is to snap it.
+        // Let's assume the user dragged it to where the touch ended.
+
+        let targetX = 0;
+        let targetY = 0;
+
+        const videoWidth = 130;
+        const videoHeight = 170;
         const padding = 16;
 
-        if (currentX < SCREEN_WIDTH / 2) {
+        // Simple snap logic: Left or Right
+        if (absoluteX < SCREEN_WIDTH / 2) {
           targetX = padding;
         } else {
           targetX = SCREEN_WIDTH - videoWidth - padding;
         }
 
-        if (currentY < padding) {
-          targetY = padding;
-        } else if (currentY > SCREEN_HEIGHT - videoHeight - 200) {
-          targetY = SCREEN_HEIGHT - videoHeight - 200;
+        // Simple snap logic: Top or Bottom (constrained)
+        if (absoluteY < SCREEN_HEIGHT / 2) {
+          targetY = 100; // Top area
         } else {
-          targetY = currentY;
+          targetY = SCREEN_HEIGHT - videoHeight - 100; // Bottom area
         }
-
-        // Update start position for next gesture
-        localVideoStartX.current = targetX;
-        localVideoStartY.current = targetY;
 
         Animated.parallel([
           Animated.spring(localVideoTranslateX, {
-            toValue: targetX - (SCREEN_WIDTH - 140),
+            toValue: targetX,
             useNativeDriver: true,
             tension: 50,
             friction: 7,
           }),
           Animated.spring(localVideoTranslateY, {
-            toValue: targetY - 100,
+            toValue: targetY,
             useNativeDriver: true,
             tension: 50,
             friction: 7,
           }),
-        ]).start();
+        ]).start(() => {
+          // After snapping, set the offset to the new position and reset value to 0
+          // This prepares for the next drag
+          localVideoTranslateX.setOffset(targetX);
+          localVideoTranslateX.setValue(0);
+          localVideoTranslateY.setOffset(targetY);
+          localVideoTranslateY.setValue(0);
+        });
       }
     };
+
+    console.log('currentCallTypeRef', currentCallTypeRef.current);
+
 
     return (
       <PanGestureHandler
@@ -1702,19 +1555,33 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
               opacity: dragOpacity,
             },
           ]}>
-          {/* Primary User Screen (Fixed) - Remote video always full screen */}
-          {remoteStream ? (
-            <View style={styles.fullScreenVideo}>
-              <RTCView
-                objectFit={'cover'}
-                style={styles.fullScreenRTCView}
-                streamURL={remoteStream.toURL()}
-              />
-            </View>
-          ) : null}
+          {/* Primary User Screen (Fixed) - Renders Remote or Local based on swap state */}
+          <View style={styles.fullScreenVideo}>
+            {isLocalVideoFloating ? (
+              remoteStream ? (
+                <RTCView
+                  objectFit={'cover'}
+                  style={styles.fullScreenRTCView}
+                  streamURL={remoteStream.toURL()}
+                />
+              ) : (
+                <View style={[styles.fullScreenRTCView, { backgroundColor: '#1A1C22', justifyContent: 'center', alignItems: 'center' }]}>
+                  <Text style={{ color: '#D0D4DD', fontSize: 18 }}>Waiting for video...</Text>
+                </View>
+              )
+            ) : (
+              (localStream || localStreamRef.current) ? (
+                <RTCView
+                  objectFit={'cover'}
+                  style={styles.fullScreenRTCView}
+                  streamURL={(localStream || localStreamRef.current)!.toURL()}
+                />
+              ) : null
+            )}
+          </View>
 
-          {/* Secondary User Screen (Draggable) - Local video as small floating window */}
-          {currentCallTypeRef.current === CallType.WEBRTC_ROOM && (localStream || localStreamRef.current) ? (
+          {/* Secondary User Screen (Draggable) - Renders Local or Remote based on swap state */}
+          {currentCallTypeRef.current === CallType.WEBRTC_ROOM ? (
             <PanGestureHandler
               onGestureEvent={onLocalVideoGestureEvent}
               onHandlerStateChange={onLocalVideoHandlerStateChange}
@@ -1730,91 +1597,107 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation 
                     ],
                   },
                 ]}>
-                <View style={styles.smallVideoTouchable}>
-                  {localStream || localStreamRef.current ? (
-                    <RTCView
-                      objectFit={'cover'}
-                      style={styles.smallRTCView}
-                      streamURL={(localStream || localStreamRef.current)!.toURL()}
-                    />
-                  ) : (
-                    <View style={styles.smallVideoPlaceholder}>
-                      <Text style={styles.smallVideoPlaceholderText}>Camera</Text>
-                    </View>
-                  )}
-                  <View style={styles.smallVideoBorder} />
-                </View>
+                <TouchableWithoutFeedback onPress={() => setIsLocalVideoFloating(!isLocalVideoFloating)}>
+                  <View style={styles.smallVideoTouchable}>
+                    {isLocalVideoFloating ? (
+                      (localStream || localStreamRef.current) ? (
+                        <RTCView
+                          objectFit={'cover'}
+                          style={styles.smallRTCView}
+                          streamURL={(localStream || localStreamRef.current)!.toURL()}
+                        />
+                      ) : (
+                        <View style={styles.smallVideoPlaceholder}>
+                          <Text style={styles.smallVideoPlaceholderText}>Camera Off</Text>
+                        </View>
+                      )
+                    ) : (
+                      remoteStream ? (
+                        <RTCView
+                          objectFit={'cover'}
+                          style={styles.smallRTCView}
+                          streamURL={remoteStream.toURL()}
+                        />
+                      ) : (
+                        <View style={styles.smallVideoPlaceholder}>
+                          <Text style={styles.smallVideoPlaceholderText}>Remote Off</Text>
+                        </View>
+                      )
+                    )}
+                    <View style={styles.smallVideoBorder} />
+                  </View>
+                </TouchableWithoutFeedback>
               </Animated.View>
             </PanGestureHandler>
           ) : null}
-        <View style={styles.controlBar}>
-          <IconContainer
-            backgroundColor={colors.danger}
-            onPress={() => {
-              leave();
-            }}
-            Icon={() => {
-              return <CallEnd width={26} height={26} />;
-            }}
-          />
-          <IconContainer
-            style={micIconStyle}
-            backgroundColor={!localMicOn ? colors.white : 'transparent'}
-            onPress={() => {
-              toggleMic();
-            }}
-            Icon={() => {
-              return localMicOn ? (
-                <MicOn width={24} height={24} />
-              ) : (
-                <MicOff width={28} height={28} fill="#1D2939" />
-              );
-            }}
-          />
-          <IconContainer
-            style={videoIconStyle}
-            backgroundColor={!localWebcamOn ? colors.white : 'transparent'}
-            onPress={() => {
-              toggleCamera();
-            }}
-            Icon={() => {
-              return localWebcamOn ? (
-                <VideoOn width={24} height={24} fill="#FFF" />
-              ) : (
-                <VideoOff width={36} height={36} fill="#1D2939" />
-              );
-            }}
-          />
-          <IconContainer
-            style={speakerIconStyle}
-            backgroundColor={isSpeakerOn ? '#5568FE' : 'transparent'}
-            onPress={() => {
-              toggleSpeaker();
-            }}
-            Icon={() => {
-              return (
-                <Text style={speakerTextStyle}>
-                  {isSpeakerOn ? 'SPK' : 'EAR'}
-                </Text>
-              );
-            }}
-          />
-          <IconContainer
-            style={styles.iconButtonBorder}
-            backgroundColor={'transparent'}
-            onPress={() => {
-              switchCamera();
-            }}
-            Icon={() => {
-              return <CameraSwitch width={24} height={24} fill="#FFF" />;
-            }}
-          />
-        </View>
-        {/* Drag indicator */}
-        <View style={styles.dragIndicator}>
-          <View style={styles.dragHandle} />
-        </View>
-      </Animated.View>
+          <View style={styles.controlBar}>
+            <IconContainer
+              backgroundColor={colors.danger}
+              onPress={() => {
+                leave();
+              }}
+              Icon={() => {
+                return <CallEnd width={26} height={26} />;
+              }}
+            />
+            <IconContainer
+              style={micIconStyle}
+              backgroundColor={!localMicOn ? colors.white : 'transparent'}
+              onPress={() => {
+                toggleMic();
+              }}
+              Icon={() => {
+                return localMicOn ? (
+                  <MicOn width={24} height={24} />
+                ) : (
+                  <MicOff width={28} height={28} fill="#1D2939" />
+                );
+              }}
+            />
+            <IconContainer
+              style={videoIconStyle}
+              backgroundColor={!localWebcamOn ? colors.white : 'transparent'}
+              onPress={() => {
+                toggleCamera();
+              }}
+              Icon={() => {
+                return localWebcamOn ? (
+                  <VideoOn width={24} height={24} fill="#FFF" />
+                ) : (
+                  <VideoOff width={36} height={36} fill="#1D2939" />
+                );
+              }}
+            />
+            <IconContainer
+              style={speakerIconStyle}
+              backgroundColor={isSpeakerOn ? '#5568FE' : 'transparent'}
+              onPress={() => {
+                toggleSpeaker();
+              }}
+              Icon={() => {
+                return (
+                  <Text style={speakerTextStyle}>
+                    {isSpeakerOn ? 'SPK' : 'EAR'}
+                  </Text>
+                );
+              }}
+            />
+            <IconContainer
+              style={styles.iconButtonBorder}
+              backgroundColor={'transparent'}
+              onPress={() => {
+                switchCamera();
+              }}
+              Icon={() => {
+                return <CameraSwitch width={24} height={24} fill="#FFF" />;
+              }}
+            />
+          </View>
+          {/* Drag indicator */}
+          <View style={styles.dragIndicator}>
+            <View style={styles.dragHandle} />
+          </View>
+        </Animated.View>
       </PanGestureHandler>
     );
   };
@@ -2059,8 +1942,8 @@ const styles = StyleSheet.create({
     width: 130,
     height: 170,
     zIndex: 100,
-    top: 100,
-    right: 20,
+    top: 0,
+    left: 0,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.5,

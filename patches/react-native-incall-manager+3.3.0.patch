@@ -1,0 +1,769 @@
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/4555aadd226047f4b109caed233aafe6/results.bin b/node_modules/react-native-incall-manager/android/build/.transforms/4555aadd226047f4b109caed233aafe6/results.bin
+new file mode 100644
+index 0000000..0d259dd
+--- /dev/null
++++ b/node_modules/react-native-incall-manager/android/build/.transforms/4555aadd226047f4b109caed233aafe6/results.bin
+@@ -0,0 +1 @@
++o/classes
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/4555aadd226047f4b109caed233aafe6/transformed/classes/classes_dex/classes.dex b/node_modules/react-native-incall-manager/android/build/.transforms/4555aadd226047f4b109caed233aafe6/transformed/classes/classes_dex/classes.dex
+new file mode 100644
+index 0000000..a06cf2e
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/4555aadd226047f4b109caed233aafe6/transformed/classes/classes_dex/classes.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/results.bin b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/results.bin
+new file mode 100644
+index 0000000..7ed749e
+--- /dev/null
++++ b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/results.bin
+@@ -0,0 +1 @@
++o/bundleLibRuntimeToDirDebug
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$1.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$1.dex
+new file mode 100644
+index 0000000..7c03f93
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$1.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$BluetoothHeadsetBroadcastReceiver.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$BluetoothHeadsetBroadcastReceiver.dex
+new file mode 100644
+index 0000000..0cb2251
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$BluetoothHeadsetBroadcastReceiver.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$BluetoothServiceListener.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$BluetoothServiceListener.dex
+new file mode 100644
+index 0000000..033e4c8
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$BluetoothServiceListener.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$State.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$State.dex
+new file mode 100644
+index 0000000..9ff0100
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$State.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager.dex
+new file mode 100644
+index 0000000..771f562
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/AppRTC/AppRTCProximitySensor.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/AppRTC/AppRTCProximitySensor.dex
+new file mode 100644
+index 0000000..7a23c5e
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/AppRTC/AppRTCProximitySensor.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/BuildConfig.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/BuildConfig.dex
+new file mode 100644
+index 0000000..3133c0c
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/BuildConfig.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$1.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$1.dex
+new file mode 100644
+index 0000000..9174368
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$1.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$10.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$10.dex
+new file mode 100644
+index 0000000..807c114
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$10.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$11.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$11.dex
+new file mode 100644
+index 0000000..881d0c2
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$11.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$12.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$12.dex
+new file mode 100644
+index 0000000..4cef310
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$12.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$2.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$2.dex
+new file mode 100644
+index 0000000..1bf3c28
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$2.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$3.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$3.dex
+new file mode 100644
+index 0000000..174317b
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$3.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$4.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$4.dex
+new file mode 100644
+index 0000000..cd4ee7a
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$4.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$5.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$5.dex
+new file mode 100644
+index 0000000..f764e73
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$5.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$6.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$6.dex
+new file mode 100644
+index 0000000..018e8ff
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$6.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$7.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$7.dex
+new file mode 100644
+index 0000000..54ee62f
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$7.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$8.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$8.dex
+new file mode 100644
+index 0000000..000e19a
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$8.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$9.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$9.dex
+new file mode 100644
+index 0000000..49012b5
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$9.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$AudioDevice.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$AudioDevice.dex
+new file mode 100644
+index 0000000..75cb546
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$AudioDevice.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$AudioManagerState.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$AudioManagerState.dex
+new file mode 100644
+index 0000000..05024cb
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$AudioManagerState.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$MyPlayerInterface.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$MyPlayerInterface.dex
+new file mode 100644
+index 0000000..fd5ccee
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$MyPlayerInterface.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$OnFocusChangeListener.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$OnFocusChangeListener.dex
+new file mode 100644
+index 0000000..2e003bf
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$OnFocusChangeListener.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$myMediaPlayer.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$myMediaPlayer.dex
+new file mode 100644
+index 0000000..60d6b3b
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$myMediaPlayer.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$myToneGenerator.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$myToneGenerator.dex
+new file mode 100644
+index 0000000..bdbf084
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule$myToneGenerator.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule.dex
+new file mode 100644
+index 0000000..b70ed68
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerModule.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerPackage.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerPackage.dex
+new file mode 100644
+index 0000000..b470e16
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallManagerPackage.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallProximityManager$1.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallProximityManager$1.dex
+new file mode 100644
+index 0000000..1378e8f
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallProximityManager$1.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallProximityManager.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallProximityManager.dex
+new file mode 100644
+index 0000000..8bbdaf6
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallProximityManager.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallWakeLockUtils.dex b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallWakeLockUtils.dex
+new file mode 100644
+index 0000000..0fe0ba7
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/bundleLibRuntimeToDirDebug_dex/com/zxcpoiu/incallmanager/InCallWakeLockUtils.dex differ
+diff --git a/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/desugar_graph.bin b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/desugar_graph.bin
+new file mode 100644
+index 0000000..be1c33a
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/.transforms/f54f0197f489eb567a45342488cd228c/transformed/bundleLibRuntimeToDirDebug/desugar_graph.bin differ
+diff --git a/node_modules/react-native-incall-manager/android/build/generated/source/buildConfig/debug/com/zxcpoiu/incallmanager/BuildConfig.java b/node_modules/react-native-incall-manager/android/build/generated/source/buildConfig/debug/com/zxcpoiu/incallmanager/BuildConfig.java
+new file mode 100644
+index 0000000..8b0860a
+--- /dev/null
++++ b/node_modules/react-native-incall-manager/android/build/generated/source/buildConfig/debug/com/zxcpoiu/incallmanager/BuildConfig.java
+@@ -0,0 +1,10 @@
++/**
++ * Automatically generated file. DO NOT MODIFY
++ */
++package com.zxcpoiu.incallmanager;
++
++public final class BuildConfig {
++  public static final boolean DEBUG = Boolean.parseBoolean("true");
++  public static final String LIBRARY_PACKAGE_NAME = "com.zxcpoiu.incallmanager";
++  public static final String BUILD_TYPE = "debug";
++}
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/AndroidManifest.xml b/node_modules/react-native-incall-manager/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/AndroidManifest.xml
+new file mode 100644
+index 0000000..46cac04
+--- /dev/null
++++ b/node_modules/react-native-incall-manager/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/AndroidManifest.xml
+@@ -0,0 +1,7 @@
++<?xml version="1.0" encoding="utf-8"?>
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="com.zxcpoiu.incallmanager" >
++
++    <uses-sdk android:minSdkVersion="24" />
++
++</manifest>
+\ No newline at end of file
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/output-metadata.json b/node_modules/react-native-incall-manager/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/output-metadata.json
+new file mode 100644
+index 0000000..61e72ab
+--- /dev/null
++++ b/node_modules/react-native-incall-manager/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/output-metadata.json
+@@ -0,0 +1,18 @@
++{
++  "version": 3,
++  "artifactType": {
++    "type": "AAPT_FRIENDLY_MERGED_MANIFESTS",
++    "kind": "Directory"
++  },
++  "applicationId": "com.zxcpoiu.incallmanager",
++  "variantName": "debug",
++  "elements": [
++    {
++      "type": "SINGLE",
++      "filters": [],
++      "attributes": [],
++      "outputFile": "AndroidManifest.xml"
++    }
++  ],
++  "elementType": "File"
++}
+\ No newline at end of file
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/aar_metadata/debug/writeDebugAarMetadata/aar-metadata.properties b/node_modules/react-native-incall-manager/android/build/intermediates/aar_metadata/debug/writeDebugAarMetadata/aar-metadata.properties
+new file mode 100644
+index 0000000..1211b1e
+--- /dev/null
++++ b/node_modules/react-native-incall-manager/android/build/intermediates/aar_metadata/debug/writeDebugAarMetadata/aar-metadata.properties
+@@ -0,0 +1,6 @@
++aarFormatVersion=1.0
++aarMetadataVersion=1.0
++minCompileSdk=1
++minCompileSdkExtension=0
++minAndroidGradlePluginVersion=1.0.0
++coreLibraryDesugaringEnabled=false
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/annotation_processor_list/debug/javaPreCompileDebug/annotationProcessors.json b/node_modules/react-native-incall-manager/android/build/intermediates/annotation_processor_list/debug/javaPreCompileDebug/annotationProcessors.json
+new file mode 100644
+index 0000000..9e26dfe
+--- /dev/null
++++ b/node_modules/react-native-incall-manager/android/build/intermediates/annotation_processor_list/debug/javaPreCompileDebug/annotationProcessors.json
+@@ -0,0 +1 @@
++{}
+\ No newline at end of file
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/compile_library_classes_jar/debug/bundleLibCompileToJarDebug/classes.jar b/node_modules/react-native-incall-manager/android/build/intermediates/compile_library_classes_jar/debug/bundleLibCompileToJarDebug/classes.jar
+new file mode 100644
+index 0000000..665c506
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/compile_library_classes_jar/debug/bundleLibCompileToJarDebug/classes.jar differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar b/node_modules/react-native-incall-manager/android/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar
+new file mode 100644
+index 0000000..68c91a1
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/compile_symbol_list/debug/generateDebugRFile/R.txt b/node_modules/react-native-incall-manager/android/build/intermediates/compile_symbol_list/debug/generateDebugRFile/R.txt
+new file mode 100644
+index 0000000..e69de29
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties b/node_modules/react-native-incall-manager/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties
+new file mode 100644
+index 0000000..10369ed
+--- /dev/null
++++ b/node_modules/react-native-incall-manager/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties
+@@ -0,0 +1 @@
++#Thu Nov 20 03:30:56 PKT 2025
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml b/node_modules/react-native-incall-manager/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml
+new file mode 100644
+index 0000000..7983bad
+--- /dev/null
++++ b/node_modules/react-native-incall-manager/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/imtiaz/Development/Other/Veep/node_modules/react-native-incall-manager/android/src/main/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main" generated-set="main$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/imtiaz/Development/Other/Veep/node_modules/react-native-incall-manager/android/src/main/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="debug$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/imtiaz/Development/Other/Veep/node_modules/react-native-incall-manager/android/src/debug/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="debug" generated-set="debug$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/imtiaz/Development/Other/Veep/node_modules/react-native-incall-manager/android/src/debug/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/imtiaz/Development/Other/Veep/node_modules/react-native-incall-manager/android/build/generated/res/resValues/debug"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated" generated-set="generated$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/imtiaz/Development/Other/Veep/node_modules/react-native-incall-manager/android/build/generated/res/resValues/debug"/></dataSet><mergedItems/></merger>
+\ No newline at end of file
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/incremental/mergeDebugAssets/merger.xml b/node_modules/react-native-incall-manager/android/build/intermediates/incremental/mergeDebugAssets/merger.xml
+new file mode 100644
+index 0000000..ce00f8b
+--- /dev/null
++++ b/node_modules/react-native-incall-manager/android/build/intermediates/incremental/mergeDebugAssets/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/imtiaz/Development/Other/Veep/node_modules/react-native-incall-manager/android/src/main/assets"/></dataSet><dataSet config="debug" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/imtiaz/Development/Other/Veep/node_modules/react-native-incall-manager/android/src/debug/assets"/></dataSet><dataSet config="generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/imtiaz/Development/Other/Veep/node_modules/react-native-incall-manager/android/build/intermediates/shader_assets/debug/compileDebugShaders/out"/></dataSet></merger>
+\ No newline at end of file
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml b/node_modules/react-native-incall-manager/android/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml
+new file mode 100644
+index 0000000..dbe7709
+--- /dev/null
++++ b/node_modules/react-native-incall-manager/android/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/imtiaz/Development/Other/Veep/node_modules/react-native-incall-manager/android/src/main/jniLibs"/></dataSet><dataSet config="debug" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/imtiaz/Development/Other/Veep/node_modules/react-native-incall-manager/android/src/debug/jniLibs"/></dataSet></merger>
+\ No newline at end of file
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/incremental/mergeDebugShaders/merger.xml b/node_modules/react-native-incall-manager/android/build/intermediates/incremental/mergeDebugShaders/merger.xml
+new file mode 100644
+index 0000000..9d66f4a
+--- /dev/null
++++ b/node_modules/react-native-incall-manager/android/build/intermediates/incremental/mergeDebugShaders/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/imtiaz/Development/Other/Veep/node_modules/react-native-incall-manager/android/src/main/shaders"/></dataSet><dataSet config="debug" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/imtiaz/Development/Other/Veep/node_modules/react-native-incall-manager/android/src/debug/shaders"/></dataSet></merger>
+\ No newline at end of file
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$1.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$1.class
+new file mode 100644
+index 0000000..1c939b1
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$1.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$BluetoothHeadsetBroadcastReceiver.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$BluetoothHeadsetBroadcastReceiver.class
+new file mode 100644
+index 0000000..1bce59e
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$BluetoothHeadsetBroadcastReceiver.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$BluetoothServiceListener.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$BluetoothServiceListener.class
+new file mode 100644
+index 0000000..69e8cea
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$BluetoothServiceListener.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$State.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$State.class
+new file mode 100644
+index 0000000..77d0c24
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$State.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager.class
+new file mode 100644
+index 0000000..9c8b1e6
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/AppRTC/AppRTCProximitySensor.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/AppRTC/AppRTCProximitySensor.class
+new file mode 100644
+index 0000000..25cbd75
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/AppRTC/AppRTCProximitySensor.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/BuildConfig.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/BuildConfig.class
+new file mode 100644
+index 0000000..59ffc8f
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/BuildConfig.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$1.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$1.class
+new file mode 100644
+index 0000000..aed62d5
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$1.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$10.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$10.class
+new file mode 100644
+index 0000000..b8eb034
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$10.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$11.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$11.class
+new file mode 100644
+index 0000000..adcdbcd
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$11.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$12.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$12.class
+new file mode 100644
+index 0000000..3fb4ecc
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$12.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$2.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$2.class
+new file mode 100644
+index 0000000..9d649e8
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$2.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$3.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$3.class
+new file mode 100644
+index 0000000..ce76270
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$3.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$4.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$4.class
+new file mode 100644
+index 0000000..5a0c3d5
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$4.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$5.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$5.class
+new file mode 100644
+index 0000000..6d56194
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$5.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$6.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$6.class
+new file mode 100644
+index 0000000..00e1890
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$6.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$7.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$7.class
+new file mode 100644
+index 0000000..95a57bd
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$7.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$8.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$8.class
+new file mode 100644
+index 0000000..33ed7f2
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$8.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$9.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$9.class
+new file mode 100644
+index 0000000..aa61677
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$9.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$AudioDevice.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$AudioDevice.class
+new file mode 100644
+index 0000000..047a515
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$AudioDevice.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$AudioManagerState.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$AudioManagerState.class
+new file mode 100644
+index 0000000..06dbfcd
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$AudioManagerState.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$MyPlayerInterface.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$MyPlayerInterface.class
+new file mode 100644
+index 0000000..0abf80d
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$MyPlayerInterface.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$OnFocusChangeListener.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$OnFocusChangeListener.class
+new file mode 100644
+index 0000000..b0b8775
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$OnFocusChangeListener.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$myMediaPlayer.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$myMediaPlayer.class
+new file mode 100644
+index 0000000..3eda76d
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$myMediaPlayer.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$myToneGenerator.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$myToneGenerator.class
+new file mode 100644
+index 0000000..cb28c9c
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule$myToneGenerator.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule.class
+new file mode 100644
+index 0000000..f8a5a5d
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerModule.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerPackage.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerPackage.class
+new file mode 100644
+index 0000000..821ffb7
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallManagerPackage.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallProximityManager$1.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallProximityManager$1.class
+new file mode 100644
+index 0000000..78a7dc5
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallProximityManager$1.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallProximityManager.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallProximityManager.class
+new file mode 100644
+index 0000000..2484e40
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallProximityManager.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallWakeLockUtils.class b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallWakeLockUtils.class
+new file mode 100644
+index 0000000..37287cd
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zxcpoiu/incallmanager/InCallWakeLockUtils.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/local_only_symbol_list/debug/parseDebugLocalResources/R-def.txt b/node_modules/react-native-incall-manager/android/build/intermediates/local_only_symbol_list/debug/parseDebugLocalResources/R-def.txt
+new file mode 100644
+index 0000000..78ac5b8
+--- /dev/null
++++ b/node_modules/react-native-incall-manager/android/build/intermediates/local_only_symbol_list/debug/parseDebugLocalResources/R-def.txt
+@@ -0,0 +1,2 @@
++R_DEF: Internal format may change without notice
++local
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/manifest_merge_blame_file/debug/processDebugManifest/manifest-merger-blame-debug-report.txt b/node_modules/react-native-incall-manager/android/build/intermediates/manifest_merge_blame_file/debug/processDebugManifest/manifest-merger-blame-debug-report.txt
+new file mode 100644
+index 0000000..0ba8915
+--- /dev/null
++++ b/node_modules/react-native-incall-manager/android/build/intermediates/manifest_merge_blame_file/debug/processDebugManifest/manifest-merger-blame-debug-report.txt
+@@ -0,0 +1,7 @@
++1<?xml version="1.0" encoding="utf-8"?>
++2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++3    package="com.zxcpoiu.incallmanager" >
++4
++5    <uses-sdk android:minSdkVersion="24" />
++6
++7</manifest>
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml b/node_modules/react-native-incall-manager/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml
+new file mode 100644
+index 0000000..46cac04
+--- /dev/null
++++ b/node_modules/react-native-incall-manager/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml
+@@ -0,0 +1,7 @@
++<?xml version="1.0" encoding="utf-8"?>
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="com.zxcpoiu.incallmanager" >
++
++    <uses-sdk android:minSdkVersion="24" />
++
++</manifest>
+\ No newline at end of file
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/navigation_json/debug/extractDeepLinksDebug/navigation.json b/node_modules/react-native-incall-manager/android/build/intermediates/navigation_json/debug/extractDeepLinksDebug/navigation.json
+new file mode 100644
+index 0000000..0637a08
+--- /dev/null
++++ b/node_modules/react-native-incall-manager/android/build/intermediates/navigation_json/debug/extractDeepLinksDebug/navigation.json
+@@ -0,0 +1 @@
++[]
+\ No newline at end of file
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/nested_resources_validation_report/debug/generateDebugResources/nestedResourcesValidationReport.txt b/node_modules/react-native-incall-manager/android/build/intermediates/nested_resources_validation_report/debug/generateDebugResources/nestedResourcesValidationReport.txt
+new file mode 100644
+index 0000000..08f4ebe
+--- /dev/null
++++ b/node_modules/react-native-incall-manager/android/build/intermediates/nested_resources_validation_report/debug/generateDebugResources/nestedResourcesValidationReport.txt
+@@ -0,0 +1 @@
++0 Warning/Error
+\ No newline at end of file
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$1.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$1.class
+new file mode 100644
+index 0000000..1c939b1
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$1.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$BluetoothHeadsetBroadcastReceiver.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$BluetoothHeadsetBroadcastReceiver.class
+new file mode 100644
+index 0000000..1bce59e
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$BluetoothHeadsetBroadcastReceiver.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$BluetoothServiceListener.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$BluetoothServiceListener.class
+new file mode 100644
+index 0000000..69e8cea
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$BluetoothServiceListener.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$State.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$State.class
+new file mode 100644
+index 0000000..77d0c24
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager$State.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager.class
+new file mode 100644
+index 0000000..9c8b1e6
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/AppRTC/AppRTCProximitySensor.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/AppRTC/AppRTCProximitySensor.class
+new file mode 100644
+index 0000000..25cbd75
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/AppRTC/AppRTCProximitySensor.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/BuildConfig.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/BuildConfig.class
+new file mode 100644
+index 0000000..59ffc8f
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/BuildConfig.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$1.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$1.class
+new file mode 100644
+index 0000000..aed62d5
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$1.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$10.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$10.class
+new file mode 100644
+index 0000000..b8eb034
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$10.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$11.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$11.class
+new file mode 100644
+index 0000000..adcdbcd
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$11.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$12.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$12.class
+new file mode 100644
+index 0000000..3fb4ecc
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$12.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$2.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$2.class
+new file mode 100644
+index 0000000..9d649e8
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$2.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$3.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$3.class
+new file mode 100644
+index 0000000..ce76270
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$3.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$4.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$4.class
+new file mode 100644
+index 0000000..5a0c3d5
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$4.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$5.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$5.class
+new file mode 100644
+index 0000000..6d56194
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$5.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$6.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$6.class
+new file mode 100644
+index 0000000..00e1890
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$6.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$7.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$7.class
+new file mode 100644
+index 0000000..95a57bd
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$7.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$8.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$8.class
+new file mode 100644
+index 0000000..33ed7f2
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$8.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$9.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$9.class
+new file mode 100644
+index 0000000..aa61677
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$9.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$AudioDevice.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$AudioDevice.class
+new file mode 100644
+index 0000000..047a515
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$AudioDevice.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$AudioManagerState.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$AudioManagerState.class
+new file mode 100644
+index 0000000..06dbfcd
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$AudioManagerState.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$MyPlayerInterface.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$MyPlayerInterface.class
+new file mode 100644
+index 0000000..0abf80d
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$MyPlayerInterface.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$OnFocusChangeListener.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$OnFocusChangeListener.class
+new file mode 100644
+index 0000000..b0b8775
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$OnFocusChangeListener.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$myMediaPlayer.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$myMediaPlayer.class
+new file mode 100644
+index 0000000..3eda76d
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$myMediaPlayer.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$myToneGenerator.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$myToneGenerator.class
+new file mode 100644
+index 0000000..cb28c9c
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule$myToneGenerator.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule.class
+new file mode 100644
+index 0000000..f8a5a5d
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerModule.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerPackage.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerPackage.class
+new file mode 100644
+index 0000000..821ffb7
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallManagerPackage.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallProximityManager$1.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallProximityManager$1.class
+new file mode 100644
+index 0000000..78a7dc5
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallProximityManager$1.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallProximityManager.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallProximityManager.class
+new file mode 100644
+index 0000000..2484e40
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallProximityManager.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallWakeLockUtils.class b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallWakeLockUtils.class
+new file mode 100644
+index 0000000..37287cd
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_dir/debug/bundleLibRuntimeToDirDebug/com/zxcpoiu/incallmanager/InCallWakeLockUtils.class differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_jar/debug/bundleLibRuntimeToJarDebug/classes.jar b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_jar/debug/bundleLibRuntimeToJarDebug/classes.jar
+new file mode 100644
+index 0000000..fc0e959
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/intermediates/runtime_library_classes_jar/debug/bundleLibRuntimeToJarDebug/classes.jar differ
+diff --git a/node_modules/react-native-incall-manager/android/build/intermediates/symbol_list_with_package_name/debug/generateDebugRFile/package-aware-r.txt b/node_modules/react-native-incall-manager/android/build/intermediates/symbol_list_with_package_name/debug/generateDebugRFile/package-aware-r.txt
+new file mode 100644
+index 0000000..71563ec
+--- /dev/null
++++ b/node_modules/react-native-incall-manager/android/build/intermediates/symbol_list_with_package_name/debug/generateDebugRFile/package-aware-r.txt
+@@ -0,0 +1 @@
++com.zxcpoiu.incallmanager
+diff --git a/node_modules/react-native-incall-manager/android/build/outputs/logs/manifest-merger-debug-report.txt b/node_modules/react-native-incall-manager/android/build/outputs/logs/manifest-merger-debug-report.txt
+new file mode 100644
+index 0000000..eeda045
+--- /dev/null
++++ b/node_modules/react-native-incall-manager/android/build/outputs/logs/manifest-merger-debug-report.txt
+@@ -0,0 +1,17 @@
++-- Merging decision tree log ---
++manifest
++ADDED from /Users/imtiaz/Development/Other/Veep/node_modules/react-native-incall-manager/android/src/main/AndroidManifest.xml:2:1-4:12
++INJECTED from /Users/imtiaz/Development/Other/Veep/node_modules/react-native-incall-manager/android/src/main/AndroidManifest.xml:2:1-4:12
++	package
++		ADDED from /Users/imtiaz/Development/Other/Veep/node_modules/react-native-incall-manager/android/src/main/AndroidManifest.xml:3:5-40
++		INJECTED from /Users/imtiaz/Development/Other/Veep/node_modules/react-native-incall-manager/android/src/main/AndroidManifest.xml
++	xmlns:android
++		ADDED from /Users/imtiaz/Development/Other/Veep/node_modules/react-native-incall-manager/android/src/main/AndroidManifest.xml:2:11-69
++uses-sdk
++INJECTED from /Users/imtiaz/Development/Other/Veep/node_modules/react-native-incall-manager/android/src/main/AndroidManifest.xml reason: use-sdk injection requested
++INJECTED from /Users/imtiaz/Development/Other/Veep/node_modules/react-native-incall-manager/android/src/main/AndroidManifest.xml
++INJECTED from /Users/imtiaz/Development/Other/Veep/node_modules/react-native-incall-manager/android/src/main/AndroidManifest.xml
++	android:targetSdkVersion
++		INJECTED from /Users/imtiaz/Development/Other/Veep/node_modules/react-native-incall-manager/android/src/main/AndroidManifest.xml
++	android:minSdkVersion
++		INJECTED from /Users/imtiaz/Development/Other/Veep/node_modules/react-native-incall-manager/android/src/main/AndroidManifest.xml
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/AppRTCBluetoothManager$1.class.uniqueId14 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/AppRTCBluetoothManager$1.class.uniqueId14
+new file mode 100644
+index 0000000..1c939b1
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/AppRTCBluetoothManager$1.class.uniqueId14 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/AppRTCBluetoothManager$BluetoothHeadsetBroadcastReceiver.class.uniqueId10 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/AppRTCBluetoothManager$BluetoothHeadsetBroadcastReceiver.class.uniqueId10
+new file mode 100644
+index 0000000..1bce59e
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/AppRTCBluetoothManager$BluetoothHeadsetBroadcastReceiver.class.uniqueId10 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/AppRTCBluetoothManager$BluetoothServiceListener.class.uniqueId18 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/AppRTCBluetoothManager$BluetoothServiceListener.class.uniqueId18
+new file mode 100644
+index 0000000..69e8cea
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/AppRTCBluetoothManager$BluetoothServiceListener.class.uniqueId18 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/AppRTCBluetoothManager$State.class.uniqueId7 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/AppRTCBluetoothManager$State.class.uniqueId7
+new file mode 100644
+index 0000000..77d0c24
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/AppRTCBluetoothManager$State.class.uniqueId7 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/AppRTCBluetoothManager.class.uniqueId16 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/AppRTCBluetoothManager.class.uniqueId16
+new file mode 100644
+index 0000000..82906ea
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/AppRTCBluetoothManager.class.uniqueId16 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$1.class.uniqueId15 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$1.class.uniqueId15
+new file mode 100644
+index 0000000..aed62d5
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$1.class.uniqueId15 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$10.class.uniqueId9 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$10.class.uniqueId9
+new file mode 100644
+index 0000000..b8eb034
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$10.class.uniqueId9 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$11.class.uniqueId24 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$11.class.uniqueId24
+new file mode 100644
+index 0000000..adcdbcd
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$11.class.uniqueId24 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$12.class.uniqueId4 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$12.class.uniqueId4
+new file mode 100644
+index 0000000..3fb4ecc
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$12.class.uniqueId4 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$2.class.uniqueId12 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$2.class.uniqueId12
+new file mode 100644
+index 0000000..9d649e8
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$2.class.uniqueId12 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$3.class.uniqueId20 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$3.class.uniqueId20
+new file mode 100644
+index 0000000..ce76270
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$3.class.uniqueId20 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$4.class.uniqueId21 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$4.class.uniqueId21
+new file mode 100644
+index 0000000..5a0c3d5
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$4.class.uniqueId21 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$5.class.uniqueId11 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$5.class.uniqueId11
+new file mode 100644
+index 0000000..6d56194
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$5.class.uniqueId11 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$6.class.uniqueId26 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$6.class.uniqueId26
+new file mode 100644
+index 0000000..00e1890
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$6.class.uniqueId26 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$7.class.uniqueId1 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$7.class.uniqueId1
+new file mode 100644
+index 0000000..95a57bd
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$7.class.uniqueId1 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$8.class.uniqueId19 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$8.class.uniqueId19
+new file mode 100644
+index 0000000..33ed7f2
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$8.class.uniqueId19 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$9.class.uniqueId22 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$9.class.uniqueId22
+new file mode 100644
+index 0000000..aa61677
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$9.class.uniqueId22 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$AudioDevice.class.uniqueId17 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$AudioDevice.class.uniqueId17
+new file mode 100644
+index 0000000..047a515
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$AudioDevice.class.uniqueId17 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$AudioManagerState.class.uniqueId2 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$AudioManagerState.class.uniqueId2
+new file mode 100644
+index 0000000..06dbfcd
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$AudioManagerState.class.uniqueId2 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$MyPlayerInterface.class.uniqueId5 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$MyPlayerInterface.class.uniqueId5
+new file mode 100644
+index 0000000..0abf80d
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$MyPlayerInterface.class.uniqueId5 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$OnFocusChangeListener.class.uniqueId8 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$OnFocusChangeListener.class.uniqueId8
+new file mode 100644
+index 0000000..b0b8775
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$OnFocusChangeListener.class.uniqueId8 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$myMediaPlayer.class.uniqueId6 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$myMediaPlayer.class.uniqueId6
+new file mode 100644
+index 0000000..3eda76d
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$myMediaPlayer.class.uniqueId6 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$myToneGenerator.class.uniqueId13 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$myToneGenerator.class.uniqueId13
+new file mode 100644
+index 0000000..cb28c9c
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule$myToneGenerator.class.uniqueId13 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule.class.uniqueId3 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule.class.uniqueId3
+new file mode 100644
+index 0000000..79cbb2a
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerModule.class.uniqueId3 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerPackage.class.uniqueId23 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerPackage.class.uniqueId23
+new file mode 100644
+index 0000000..821ffb7
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallManagerPackage.class.uniqueId23 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallProximityManager$1.class.uniqueId25 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallProximityManager$1.class.uniqueId25
+new file mode 100644
+index 0000000..78a7dc5
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallProximityManager$1.class.uniqueId25 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallProximityManager.class.uniqueId0 b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallProximityManager.class.uniqueId0
+new file mode 100644
+index 0000000..2484e40
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/compileTransaction/stash-dir/InCallProximityManager.class.uniqueId0 differ
+diff --git a/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin
+new file mode 100644
+index 0000000..d7b435b
+Binary files /dev/null and b/node_modules/react-native-incall-manager/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin differ
+diff --git a/node_modules/react-native-incall-manager/android/src/main/java/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager.java b/node_modules/react-native-incall-manager/android/src/main/java/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager.java
+index 672977a..d60d56d 100644
+--- a/node_modules/react-native-incall-manager/android/src/main/java/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager.java
++++ b/node_modules/react-native-incall-manager/android/src/main/java/com/zxcpoiu/incallmanager/AppRTC/AppRTCBluetoothManager.java
+@@ -389,7 +389,11 @@ public class AppRTCBluetoothManager {
+   }
+ 
+   protected void registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
+-    apprtcContext.registerReceiver(receiver, filter);
++    if (android.os.Build.VERSION.SDK_INT >= 34) {
++      apprtcContext.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED);
++    } else {
++      apprtcContext.registerReceiver(receiver, filter);
++    }
+   }
+ 
+   protected void unregisterReceiver(BroadcastReceiver receiver) {
+diff --git a/node_modules/react-native-incall-manager/android/src/main/java/com/zxcpoiu/incallmanager/InCallManagerModule.java b/node_modules/react-native-incall-manager/android/src/main/java/com/zxcpoiu/incallmanager/InCallManagerModule.java
+index c6ebfec..a15adf4 100644
+--- a/node_modules/react-native-incall-manager/android/src/main/java/com/zxcpoiu/incallmanager/InCallManagerModule.java
++++ b/node_modules/react-native-incall-manager/android/src/main/java/com/zxcpoiu/incallmanager/InCallManagerModule.java
+@@ -296,7 +296,7 @@ public class InCallManagerModule extends ReactContextBaseJavaModule implements L
+             };
+             ReactContext reactContext = getReactApplicationContext();
+             if (reactContext != null) {
+-                reactContext.registerReceiver(wiredHeadsetReceiver, filter);
++                registerReceiver(wiredHeadsetReceiver, filter);
+             } else {
+                 Log.d(TAG, "startWiredHeadsetEvent() reactContext is null");
+             }
+@@ -326,7 +326,7 @@ public class InCallManagerModule extends ReactContextBaseJavaModule implements L
+             };
+             ReactContext reactContext = getReactApplicationContext();
+             if (reactContext != null) {
+-                reactContext.registerReceiver(noisyAudioReceiver, filter);
++                registerReceiver(noisyAudioReceiver, filter);
+             } else {
+                 Log.d(TAG, "startNoisyAudioEvent() reactContext is null");
+             }
+@@ -393,7 +393,7 @@ public class InCallManagerModule extends ReactContextBaseJavaModule implements L
+             };
+             ReactContext reactContext = getReactApplicationContext();
+             if (reactContext != null) {
+-                reactContext.registerReceiver(mediaButtonReceiver, filter);
++                registerReceiver(mediaButtonReceiver, filter);
+             } else {
+                 Log.d(TAG, "startMediaButtonEvent() reactContext is null");
+             }
+@@ -1677,7 +1677,11 @@ public class InCallManagerModule extends ReactContextBaseJavaModule implements L
+ 
+     /** Helper method for receiver registration. */
+     private void registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
+-        getReactApplicationContext().registerReceiver(receiver, filter);
++        if (Build.VERSION.SDK_INT >= 34) {
++            getReactApplicationContext().registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED);
++        } else {
++            getReactApplicationContext().registerReceiver(receiver, filter);
++        }
+     }
+ 
+     /** Helper method for unregistration of an existing receiver. */
