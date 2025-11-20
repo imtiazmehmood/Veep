@@ -5,8 +5,26 @@ const { getIO, initIO } = require('./socket');
 
 const app = express();
 
+// Health check endpoint for Render
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// API info endpoint
+app.get('/', (req, res) => {
+  res.json({
+    name: 'Veep Signaling Server',
+    version: '1.0.0',
+    status: 'running',
+    endpoints: {
+      health: '/health',
+      websocket: 'Connect via Socket.IO with callerId query parameter'
+    }
+  });
+});
+
 // Serve static files if needed
-app.use('/', express.static(path.join(__dirname, 'static')));
+app.use('/static', express.static(path.join(__dirname, 'static')));
 
 const httpServer = createServer(app);
 
