@@ -1944,25 +1944,18 @@ const styles = StyleSheet.create({
     zIndex: 100,
     top: 0,
     left: 0,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
-    elevation: 12,
+
   },
   smallVideoTouchable: {
     width: '100%',
     height: '100%',
-    borderRadius: 16,
+    borderRadius: 8,
     overflow: 'hidden',
     backgroundColor: '#1A1C22',
-    borderWidth: 3,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
   },
   smallRTCView: {
     width: '100%',
     height: '100%',
-    borderRadius: 13,
   },
   smallVideoPlaceholder: {
     width: '100%',
@@ -1970,7 +1963,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#1A1C22',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 13,
   },
   smallVideoPlaceholderText: {
     color: '#D0D4DD',
@@ -1983,9 +1975,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    borderRadius: 13,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
+    borderRadius: 8,
     pointerEvents: 'none',
   },
   controlBar: {
