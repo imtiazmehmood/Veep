@@ -329,7 +329,7 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation,
         remoteStreamRef.current = null;
       }
 
-      console.log('✅ WebRTC Cleanup complete');
+      console.log('WebRTC Cleanup complete');
     };
   }, []);
 
@@ -354,14 +354,14 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation,
         remoteRTCMessage.current = data.rtcMessage;
 
         if (!peerConnectionRef.current) {
-          console.error('❌ PeerConnection is null in callAnswered!');
+          console.error('PeerConnection is null in callAnswered!');
           return;
         }
 
         if (remoteRTCMessage.current) {
           try {
             const currentState = peerConnectionRef.current.signalingState;
-            console.log('📊 Current signaling state:', currentState);
+            console.log('Current signaling state:', currentState);
 
             // Only set remote description if we're in the correct state
             // For an answer, we should be in 'have-local-offer' state
@@ -369,21 +369,21 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation,
               await peerConnectionRef.current.setRemoteDescription(
                 new RTCSessionDescription(remoteRTCMessage.current),
               );
-              console.log('✅ Remote description set (Answer)');
+              console.log('Remote description set (Answer)');
               flushPendingCandidates();
             } else if (currentState === 'stable') {
-              console.warn('⚠️ Already in stable state, skipping setRemoteDescription');
+              console.warn('Already in stable state, skipping setRemoteDescription');
               // If already stable, the connection might already be established
               // Just flush any pending candidates
               flushPendingCandidates();
             } else {
-              console.error('❌ Unexpected signaling state for answer:', currentState);
+              console.error('Unexpected signaling state for answer:', currentState);
             }
           } catch (error: any) {
-            console.error('❌ Error setting remote description:', error);
+            console.error('Error setting remote description:', error);
           }
         } else {
-          console.error('❌ Remote RTC message is missing in callAnswered');
+          console.error('Remote RTC message is missing in callAnswered');
         }
 
         // Clear the ringing timeout since call is now answered
@@ -409,7 +409,7 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation,
       socketInstance.on('callRejected', handleCallRejected);
 
       socketInstance.on('ICEcandidate', async (data) => {
-        console.log('❄️ Received ICE candidate from', data.sender);
+        console.log('Received ICE candidate from', data.sender);
         if (!isMountedRef.current) return;
 
         let message = data.rtcMessage;
@@ -423,12 +423,12 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation,
             });
             try {
               await peerConnectionRef.current.addIceCandidate(iceCandidate);
-              console.log('✅ ICE candidate added successfully');
+              console.log('ICE candidate added successfully');
             } catch (err) {
-              console.error('❌ Error adding ICE candidate:', err);
+              console.error('Error adding ICE candidate:', err);
             }
           } else {
-            console.log('⏳ Remote description not set yet, queueing ICE candidate');
+            console.log('Remote description not set yet, queueing ICE candidate');
             pendingRemoteCandidates.current.push(message);
           }
         }
@@ -445,7 +445,7 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation,
           socket.off('callRejected');
           socket.off('callAnswered');
           socket.off('ICEcandidate');
-          console.log('🔌 Socket listeners detached');
+          console.log('Socket listeners detached');
         } catch (error: any) {
           console.log('Error cleaning up socket listeners:', error?.message || error);
         }
@@ -966,23 +966,23 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation,
 
     try {
       const currentState = peerConnectionRef.current.signalingState;
-      console.log('📊 Current signaling state before setting offer:', currentState);
+      console.log('Current signaling state before setting offer:', currentState);
 
       // For an offer, we should be in 'stable' state
       if (currentState === 'stable' || currentState === 'have-remote-offer') {
         await peerConnectionRef.current.setRemoteDescription(
           new RTCSessionDescription(remoteRTCMessage.current),
         );
-        console.log('✅ Remote description set (Offer)');
+        console.log('Remote description set (Offer)');
       } else {
-        console.error('❌ Unexpected signaling state for offer:', currentState);
+        console.error('Unexpected signaling state for offer:', currentState);
         // Try to recover by setting anyway
         await peerConnectionRef.current.setRemoteDescription(
           new RTCSessionDescription(remoteRTCMessage.current),
         );
       }
     } catch (error: any) {
-      console.error('❌ Error setting remote description in processAccept:', error);
+      console.error('Error setting remote description in processAccept:', error);
       // Don't return, try to continue
     }
     flushPendingCandidates();
@@ -1025,10 +1025,10 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation,
 
   function answerCall(data: { callerId: string; rtcMessage: RTCSessionDescription }) {
     if (socketRef.current && socketRef.current.connected) {
-      console.log('📤 Sending answerCall to:', data.callerId);
+      console.log('Sending answerCall to:', data.callerId);
       socketRef.current.emit('answerCall', data);
     } else {
-      console.error('❌ Cannot answer call: Socket not connected', {
+      console.error('Cannot answer call: Socket not connected', {
         socketExists: !!socketRef.current,
         connected: socketRef.current?.connected
       });
@@ -1221,7 +1221,7 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({ navigation,
               {!isSocketConnected && (
                 <View style={styles.errorBanner}>
                   <Text style={styles.errorText}>
-                    Not connected to server. Please check your connection.
+                    Disconnected.
                   </Text>
                 </View>
               )}
@@ -1949,7 +1949,6 @@ const styles = StyleSheet.create({
   smallVideoTouchable: {
     width: '100%',
     height: '100%',
-    borderRadius: 8,
     overflow: 'hidden',
     backgroundColor: '#1A1C22',
   },
@@ -1975,7 +1974,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    borderRadius: 8,
     pointerEvents: 'none',
   },
   controlBar: {

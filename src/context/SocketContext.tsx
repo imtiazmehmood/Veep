@@ -28,12 +28,12 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [callerId] = useState<string>(
     Math.floor(100000 + Math.random() * 900000).toString(),
   );
-  
+
   const socketRef = useRef<Socket | null>(null);
   const currentServerURL = useRef<string>(SERVER_URL);
   const alternativeURLs = useRef<string[]>(getAlternativeURLs());
   const connectionAttempts = useRef<number>(0);
-  
+
   // We need a navigation ref or hook to navigate when a call comes in
   // Since this provider is inside NavigationContainer (in App.tsx), we can use useNavigation
   // But we need to make sure SocketProvider is a child of NavigationContainer
@@ -42,9 +42,10 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     const attachSocketHandlers = (socketInstance: Socket) => {
       socketInstance.on('connect', () => {
-        console.log('✅ Socket connected with ID:', socketInstance.id);
+        console.log('Socket connected with ID:', socketInstance.id);
         setIsSocketConnected(true);
-        setConnectionStatus(`Connected to ${currentServerURL.current.replace('http://', '')}`);
+        setConnectionStatus("Connected.");
+        // setConnectionStatus(`Connected to ${currentServerURL.current.replace('http://', '')}`);
         connectionAttempts.current = 0;
       });
 
@@ -52,25 +53,25 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         console.log('Socket disconnected:', reason);
         setIsSocketConnected(false);
         setConnectionStatus('Disconnected');
-        
+
         if (reason === 'io server disconnect') {
           socketInstance.connect();
         }
       });
 
       socketInstance.on('connect_error', (error) => {
-        console.log('❌ Connection failed to:', currentServerURL.current);
-        
+        console.log('Connection failed to:', currentServerURL.current);
+
         // Try next alternative URL
         if (connectionAttempts.current < alternativeURLs.current.length) {
           const nextURL = alternativeURLs.current[connectionAttempts.current];
           connectionAttempts.current++;
           const attemptText = `Trying ${connectionAttempts.current}/${alternativeURLs.current.length}: ${nextURL.replace('http://', '')}`;
-          console.log(`🔄 ${attemptText}`);
+          console.log(`${attemptText}`);
           setConnectionStatus(attemptText);
-          
+
           socketInstance.disconnect();
-          
+
           setTimeout(() => {
             createSocket(nextURL);
           }, 1500);
@@ -81,7 +82,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       // Handle incoming calls globally
       socketInstance.on('newCall', (data) => {
-        console.log('📞 Incoming call from', data.callerId);
+        console.log('Incoming call from', data.callerId);
         // Navigate to WebRTCCall screen with incoming call data
         navigation.navigate('WebRTCCall', {
           incomingCallData: {
@@ -93,9 +94,9 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
 
     const createSocket = (url: string) => {
-      console.log('🔌 Connecting to:', url);
+      console.log('Connecting to:', url);
       currentServerURL.current = url;
-      
+
       const newSocket = SocketIOClient(url, {
         transports: ['websocket', 'polling'],
         reconnection: true,
