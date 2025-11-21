@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { globalStyles } from '../styles/globalStyles';
 import { colors } from '../styles/colors';
 import type { NavigationProps } from '../types/navigation';
+import AnimatedBorderButton from '../components/AnimatedBorderButton';
+import AnimatedGradientText from '../components/AnimatedGradientText';
 
 const HomeScreen: React.FC<NavigationProps<'Home'>> = ({ navigation }) => {
   return (
@@ -11,11 +13,14 @@ const HomeScreen: React.FC<NavigationProps<'Home'>> = ({ navigation }) => {
       <View style={globalStyles.centerContainer}>
         {/* App Logo/Icon */}
         <View style={styles.logoContainer}>
-          <Text style={styles.logoEmoji}>📹</Text>
+          <AnimatedGradientText text="Veep" />
+          {/* <Text style={styles.logoEmoji}>📹</Text> */}
         </View>
 
         {/* Title */}
-        <Text style={globalStyles.title}>Veep</Text>
+        {/* <Text style={globalStyles.title}>Veep</Text> */}
+
+        {/* <AnimatedBorderButton title="Veep" onPress={() => { }} /> */}
         <Text style={styles.tagline}>Connect face-to-face</Text>
         <Text style={globalStyles.subtitle}>
           Start or join a video call instantly

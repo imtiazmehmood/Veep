@@ -17,7 +17,7 @@ import Animated, {
   runOnJS,
 } from 'react-native-reanimated';
 import LinearGradient from 'react-native-linear-gradient';
-import { moderateScale, verticalScale } from '../../utils/metrics';
+import { moderateScale, verticalScale } from '../utils/metrics';
 
 interface AIParticleBoxProps {
   style?: StyleProp<ViewStyle>;

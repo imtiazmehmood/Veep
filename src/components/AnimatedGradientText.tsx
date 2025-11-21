@@ -17,6 +17,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import MaskedView from '@react-native-masked-view/masked-view';
 import LinearGradient from 'react-native-linear-gradient';
+import { Fonts } from '../theme/Fonts';
 
 interface AnimatedGradientTextProps {
   text: string;
@@ -112,7 +113,10 @@ const AnimatedGradientText: React.FC<AnimatedGradientTextProps> = ({
   return (
     <View style={[style, { flexDirection: 'row', alignItems: 'center' }]}>
       {/* Invisible text to establish layout size */}
-      <Text style={[style, { opacity: 0 }]} onLayout={onLayout}>
+      <Text
+        style={[style, { opacity: 0, fontFamily: Fonts.NunitoBold }]}
+        onLayout={onLayout}
+      >
         {text}
       </Text>
 

@@ -19,11 +19,11 @@ import Animated, {
   interpolate,
 } from 'react-native-reanimated';
 import Svg, { Rect, Defs, LinearGradient, Stop } from 'react-native-svg';
-import { moderateScale, verticalScale } from '../../utils/metrics';
-import { Fonts } from '../../theme/Fonts';
-import { useTheme } from '../../context/ThemeContext';
-import { useThemeStyles } from '../../hooks/useThemeStyles';
-import { ThemeColors } from '../../theme/Colors';
+import { moderateScale, verticalScale } from '../utils/metrics';
+import { Fonts } from '../theme/Fonts';
+import { useTheme } from '../context/ThemeContext';
+import { useThemeStyles } from '../hooks/useThemeStyles';
+import { ThemeColors } from '../theme/Colors';
 
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
 

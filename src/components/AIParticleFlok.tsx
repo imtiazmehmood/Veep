@@ -15,7 +15,7 @@ import Animated, {
   SharedValue,
 } from 'react-native-reanimated';
 import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
-import { moderateScale, verticalScale } from '../../utils/metrics';
+import { moderateScale, verticalScale } from '../utils/metrics';
 
 const NUM_PARTICLES = 80;
 const MAX_SPEED = 4;
