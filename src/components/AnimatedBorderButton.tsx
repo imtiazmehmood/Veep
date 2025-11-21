@@ -1,17 +1,23 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Animated,
-  Easing,
   ActivityIndicator,
   StyleProp,
   ViewStyle,
   TextStyle,
   LayoutChangeEvent,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedProps,
+  withRepeat,
+  withTiming,
+  Easing,
+  interpolate,
+} from 'react-native-reanimated';
 import Svg, { Rect, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { moderateScale, verticalScale } from '../../utils/metrics';
 import { Fonts } from '../../theme/Fonts';
@@ -52,7 +58,7 @@ const AnimatedBorderButton: React.FC<AnimatedBorderButtonProps> = ({
   const { colors, isDarkMode } = useTheme();
   const styles = useThemeStyles(createStyles);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const animationValue = useRef(new Animated.Value(0)).current;
+  const progress = useSharedValue(0);
 
   const onLayout = (event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
@@ -80,31 +86,33 @@ const AnimatedBorderButton: React.FC<AnimatedBorderButtonProps> = ({
 
   useEffect(() => {
     if (dimensions.width > 0 && dimensions.height > 0) {
-      const startAnimation = () => {
-        animationValue.setValue(0);
-        Animated.loop(
-          Animated.timing(animationValue, {
-            toValue: 1,
-            duration: 3000, // Slower for elegance
-            easing: Easing.linear,
-            useNativeDriver: true,
-          }),
-        ).start();
-      };
-      startAnimation();
+      progress.value = withRepeat(
+        withTiming(1, {
+          duration: 3000,
+          easing: Easing.linear,
+        }),
+        -1, // Infinite
+        false, // No reverse
+      );
     }
-  }, [dimensions, animationValue]);
+  }, [dimensions.width, dimensions.height, progress]);
 
-  // First snake offset
-  const strokeDashoffset1 = animationValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [perimeter, 0],
+  const animatedProps1 = useAnimatedProps(() => {
+    const offset = interpolate(progress.value, [0, 1], [perimeter, 0]);
+    return {
+      strokeDashoffset: offset,
+    };
   });
 
-  // Second snake offset (shifted by half perimeter)
-  const strokeDashoffset2 = animationValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [perimeter + perimeter / 2, 0 + perimeter / 2],
+  const animatedProps2 = useAnimatedProps(() => {
+    const offset = interpolate(
+      progress.value,
+      [0, 1],
+      [perimeter + perimeter / 2, 0 + perimeter / 2],
+    );
+    return {
+      strokeDashoffset: offset,
+    };
   });
 
   return (
@@ -154,12 +162,12 @@ const AnimatedBorderButton: React.FC<AnimatedBorderButtonProps> = ({
               rx={effectiveRadius}
               ry={effectiveRadius}
               stroke="url(#grad)"
-              strokeWidth={borderWidth * 4} // Wider for glow
+              strokeWidth={borderWidth * 4}
               fill="none"
               strokeDasharray={[snakeLength, perimeter - snakeLength]}
-              strokeDashoffset={strokeDashoffset1}
+              animatedProps={animatedProps1}
               strokeLinecap="round"
-              opacity={0.3} // Transparent for glow
+              opacity={0.3}
             />
 
             {/* GLOW EFFECT - Snake 2 */}
@@ -171,12 +179,12 @@ const AnimatedBorderButton: React.FC<AnimatedBorderButtonProps> = ({
               rx={effectiveRadius}
               ry={effectiveRadius}
               stroke="url(#grad)"
-              strokeWidth={borderWidth * 4} // Wider for glow
+              strokeWidth={borderWidth * 4}
               fill="none"
               strokeDasharray={[snakeLength, perimeter - snakeLength]}
-              strokeDashoffset={strokeDashoffset2}
+              animatedProps={animatedProps2}
               strokeLinecap="round"
-              opacity={0.3} // Transparent for glow
+              opacity={0.3}
             />
 
             {/* MAIN SNAKE 1 */}
@@ -191,7 +199,7 @@ const AnimatedBorderButton: React.FC<AnimatedBorderButtonProps> = ({
               strokeWidth={borderWidth}
               fill="none"
               strokeDasharray={[snakeLength, perimeter - snakeLength]}
-              strokeDashoffset={strokeDashoffset1}
+              animatedProps={animatedProps1}
               strokeLinecap="round"
             />
 
@@ -207,7 +215,7 @@ const AnimatedBorderButton: React.FC<AnimatedBorderButtonProps> = ({
               strokeWidth={borderWidth}
               fill="none"
               strokeDasharray={[snakeLength, perimeter - snakeLength]}
-              strokeDashoffset={strokeDashoffset2}
+              animatedProps={animatedProps2}
               strokeLinecap="round"
             />
           </Svg>

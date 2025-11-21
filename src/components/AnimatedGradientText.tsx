@@ -1,14 +1,20 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
   View,
-  Animated,
-  Easing,
   StyleProp,
   TextStyle,
   LayoutChangeEvent,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
+  Easing,
+  interpolate,
+} from 'react-native-reanimated';
 import MaskedView from '@react-native-masked-view/masked-view';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -34,7 +40,7 @@ const AnimatedGradientText: React.FC<AnimatedGradientTextProps> = ({
   duration = 2000,
 }) => {
   const [layout, setLayout] = useState({ width: 0, height: 0 });
-  const animatedValue = useRef(new Animated.Value(0)).current;
+  const progress = useSharedValue(0);
 
   const onLayout = (event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
@@ -43,24 +49,22 @@ const AnimatedGradientText: React.FC<AnimatedGradientTextProps> = ({
 
   useEffect(() => {
     if (layout.width > 0) {
-      const startAnimation = () => {
-        animatedValue.setValue(0);
-        Animated.loop(
-          Animated.timing(animatedValue, {
-            toValue: 1,
-            duration: duration,
-            easing: Easing.linear,
-            useNativeDriver: true,
-          }),
-        ).start();
-      };
-      startAnimation();
+      progress.value = withRepeat(
+        withTiming(1, {
+          duration: duration,
+          easing: Easing.linear,
+        }),
+        -1,
+        false,
+      );
     }
-  }, [layout.width, animatedValue, duration]);
+  }, [layout.width, duration, progress]);
 
-  const translateX = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -layout.width],
+  const animatedStyle = useAnimatedStyle(() => {
+    const translateX = interpolate(progress.value, [0, 1], [0, -layout.width]);
+    return {
+      transform: [{ translateX }],
+    };
   });
 
   const renderGradient = (opacity: number = 1, scale: number = 1) => (
@@ -80,12 +84,14 @@ const AnimatedGradientText: React.FC<AnimatedGradientTextProps> = ({
       }
     >
       <Animated.View
-        style={{
-          flexDirection: 'row',
-          height: layout.height,
-          width: layout.width * 2,
-          transform: [{ translateX }],
-        }}
+        style={[
+          {
+            flexDirection: 'row',
+            height: layout.height,
+            width: layout.width * 2,
+          },
+          animatedStyle,
+        ]}
       >
         <LinearGradient
           colors={colors}
