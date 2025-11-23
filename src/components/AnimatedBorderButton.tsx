@@ -12,20 +12,28 @@ import {
 } from 'react-native';
 import Animated, {
   useSharedValue,
-  useAnimatedProps,
   withRepeat,
   withTiming,
   Easing,
-  interpolate,
+  useDerivedValue,
+  cancelAnimation,
+  useFrameCallback,
 } from 'react-native-reanimated';
-import Svg, { Rect, Defs, LinearGradient, Stop } from 'react-native-svg';
+import {
+  Canvas,
+  SweepGradient,
+  BlurMask,
+  vec,
+  Group,
+  RoundedRect,
+  DashPathEffect,
+  Paint,
+} from '@shopify/react-native-skia';
 import { moderateScale, verticalScale } from '../utils/metrics';
 import { Fonts } from '../theme/Fonts';
 import { useTheme } from '../context/ThemeContext';
 import { useThemeStyles } from '../hooks/useThemeStyles';
 import { ThemeColors } from '../theme/Colors';
-
-const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
 interface AnimatedBorderButtonProps {
   title: string;
@@ -36,7 +44,18 @@ interface AnimatedBorderButtonProps {
   textStyle?: StyleProp<TextStyle>;
   borderColors?: string[];
   borderWidth?: number;
+  borderRadius?: number;
+  duration?: number;
+  snakeLength?: number;
 }
+
+const DEFAULT_BORDER_COLORS = [
+  '#FF00FF', // Magenta
+  '#00FFFF', // Cyan
+  '#00FF00', // Green
+  '#FFFF00', // Yellow
+  '#FF00FF', // Loop back to Magenta
+];
 
 const AnimatedBorderButton: React.FC<AnimatedBorderButtonProps> = ({
   title,
@@ -45,80 +64,73 @@ const AnimatedBorderButton: React.FC<AnimatedBorderButtonProps> = ({
   disabled = false,
   style,
   textStyle,
-  borderColors = [
-    '#FF0000',
-    '#00FF00',
-    '#0000FF',
-    '#FFFF00',
-    '#FF00FF',
-    '#00FFFF',
-  ],
+  borderColors = DEFAULT_BORDER_COLORS,
   borderWidth = 2,
+  borderRadius,
+  duration = 2000,
+  snakeLength: customSnakeLength,
 }) => {
   const { colors, isDarkMode } = useTheme();
   const styles = useThemeStyles(createStyles);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const progress = useSharedValue(0);
 
-  const onLayout = (event: LayoutChangeEvent) => {
+  const onLayout = React.useCallback((event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
-    setDimensions({ width, height });
-  };
+    setDimensions((prev) => {
+      if (prev.width === width && prev.height === height) return prev;
+      return { width, height };
+    });
+  }, []);
 
-  // Effective dimensions (center of the stroke)
-  const effectiveWidth = dimensions.width - borderWidth;
-  const effectiveHeight = dimensions.height - borderWidth;
+  const effectiveRadius = borderRadius ?? moderateScale(30);
 
-  // Effective radius (clamped to half the shortest side)
-  const effectiveRadius = Math.min(
-    moderateScale(30),
-    effectiveWidth / 2,
-    effectiveHeight / 2,
-  );
+  // Clamp radius to ensure it fits
+  const r = dimensions.width > 0 && dimensions.height > 0
+    ? Math.min(effectiveRadius, dimensions.width / 2, dimensions.height / 2)
+    : effectiveRadius;
 
-  // Precise perimeter calculation: 2 * (w + h) - 8 * r + 2 * PI * r
-  const perimeter =
-    2 * (effectiveWidth + effectiveHeight) -
-    8 * effectiveRadius +
-    2 * Math.PI * effectiveRadius;
+  const center = vec(dimensions.width / 2, dimensions.height / 2);
 
-  const snakeLength = perimeter * 0.3; // Shorter snake for double effect (30% each)
+  // Calculate perimeter
+  const perimeter = React.useMemo(() => {
+    // 2 * (w + h) - 8 * r + 2 * PI * r
+    // Using the inset dimensions for accurate path length
+    const w = dimensions.width - borderWidth;
+    const h = dimensions.height - borderWidth;
+    const rad = Math.max(0, r - borderWidth / 2);
 
-  useEffect(() => {
-    if (dimensions.width > 0 && dimensions.height > 0) {
-      progress.value = withRepeat(
-        withTiming(1, {
-          duration: 3000,
-          easing: Easing.linear,
-        }),
-        -1, // Infinite
-        false, // No reverse
-      );
-    }
-  }, [dimensions.width, dimensions.height, progress]);
+    return 2 * (w + h) - 8 * rad + 2 * Math.PI * rad;
+  }, [dimensions, r, borderWidth]);
 
-  const animatedProps1 = useAnimatedProps(() => {
-    const offset = interpolate(progress.value, [0, 1], [perimeter, 0]);
-    return {
-      strokeDashoffset: offset,
-    };
+  const snakeLength = customSnakeLength ?? perimeter * 0.3;
+  const intervals = React.useMemo(() => [snakeLength, perimeter - snakeLength], [snakeLength, perimeter]);
+
+  useFrameCallback((frameInfo) => {
+    if (!frameInfo.timeSinceFirstFrame) return;
+    // Use absolute timestamp to ensure synchronization across mounts
+    // We use a large divisor to keep the number manageable, but the modulo keeps it in 0-1 range
+    // duration is in ms, timestamp is in ms
+    const totalDuration = duration;
+    const time = frameInfo.timestamp;
+    progress.value = (time % totalDuration) / totalDuration;
   });
 
-  const animatedProps2 = useAnimatedProps(() => {
-    const offset = interpolate(
-      progress.value,
-      [0, 1],
-      [perimeter + perimeter / 2, 0 + perimeter / 2],
-    );
-    return {
-      strokeDashoffset: offset,
-    };
+  // Animate the dash phase
+  // We want it to move around the path.
+  // phase = 0 -> start
+  // phase = perimeter -> full loop
+  // Note: DashPathEffect phase usually shifts the dash.
+  // To move "forward", we might need negative phase or positive depending on direction.
+  const phase = useDerivedValue(() => {
+    return -progress.value * perimeter;
   });
 
   return (
     <View
       style={[
         styles.container,
+        { borderRadius: effectiveRadius },
         style,
         (disabled || loading) && styles.disabledContainer,
       ]}
@@ -126,99 +138,67 @@ const AnimatedBorderButton: React.FC<AnimatedBorderButtonProps> = ({
     >
       {dimensions.width > 0 && (
         <View style={StyleSheet.absoluteFill}>
-          <Svg width={dimensions.width} height={dimensions.height}>
-            <Defs>
-              <LinearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                {borderColors.map((color, index) => (
-                  <Stop
-                    key={index}
-                    offset={`${(index / (borderColors.length - 1)) * 100}%`}
-                    stopColor={color}
-                  />
-                ))}
-              </LinearGradient>
-            </Defs>
+          <Canvas style={{ flex: 1 }}>
+            <Group>
+              {/* Layer 1: Wide Outer Glow (Atmosphere) */}
+              <RoundedRect
+                x={borderWidth / 2}
+                y={borderWidth / 2}
+                width={dimensions.width - borderWidth}
+                height={dimensions.height - borderWidth}
+                r={Math.max(0, r - borderWidth / 2)}
+                style="stroke"
+                strokeWidth={borderWidth + 4} // Slightly wider for glow
+                color="white"
+                opacity={0.5}
+              >
+                <SweepGradient
+                  c={center}
+                  colors={borderColors}
+                />
+                <DashPathEffect intervals={intervals} phase={phase} />
+                <BlurMask blur={20} style="normal" />
+              </RoundedRect>
 
-            {/* Background Border (Static/Dimmed) */}
-            <Rect
-              x={borderWidth / 2}
-              y={borderWidth / 2}
-              width={dimensions.width - borderWidth}
-              height={dimensions.height - borderWidth}
-              rx={effectiveRadius}
-              ry={effectiveRadius}
-              stroke={colors.border}
-              strokeWidth={borderWidth}
-              fill="none"
-              opacity={0.1}
-            />
+              {/* Layer 2: Tight Inner Glow (Intensity) */}
+              <RoundedRect
+                x={borderWidth / 2}
+                y={borderWidth / 2}
+                width={dimensions.width - borderWidth}
+                height={dimensions.height - borderWidth}
+                r={Math.max(0, r - borderWidth / 2)}
+                style="stroke"
+                strokeWidth={borderWidth + 2}
+                color="white"
+                opacity={0.8}
+              >
+                <SweepGradient
+                  c={center}
+                  colors={borderColors}
+                />
+                <DashPathEffect intervals={intervals} phase={phase} />
+                <BlurMask blur={8} style="normal" />
+              </RoundedRect>
 
-            {/* GLOW EFFECT - Snake 1 */}
-            <AnimatedRect
-              x={borderWidth / 2}
-              y={borderWidth / 2}
-              width={dimensions.width - borderWidth}
-              height={dimensions.height - borderWidth}
-              rx={effectiveRadius}
-              ry={effectiveRadius}
-              stroke="url(#grad)"
-              strokeWidth={borderWidth * 4}
-              fill="none"
-              strokeDasharray={[snakeLength, perimeter - snakeLength]}
-              animatedProps={animatedProps1}
-              strokeLinecap="round"
-              opacity={0.3}
-            />
-
-            {/* GLOW EFFECT - Snake 2 */}
-            <AnimatedRect
-              x={borderWidth / 2}
-              y={borderWidth / 2}
-              width={dimensions.width - borderWidth}
-              height={dimensions.height - borderWidth}
-              rx={effectiveRadius}
-              ry={effectiveRadius}
-              stroke="url(#grad)"
-              strokeWidth={borderWidth * 4}
-              fill="none"
-              strokeDasharray={[snakeLength, perimeter - snakeLength]}
-              animatedProps={animatedProps2}
-              strokeLinecap="round"
-              opacity={0.3}
-            />
-
-            {/* MAIN SNAKE 1 */}
-            <AnimatedRect
-              x={borderWidth / 2}
-              y={borderWidth / 2}
-              width={dimensions.width - borderWidth}
-              height={dimensions.height - borderWidth}
-              rx={effectiveRadius}
-              ry={effectiveRadius}
-              stroke="url(#grad)"
-              strokeWidth={borderWidth}
-              fill="none"
-              strokeDasharray={[snakeLength, perimeter - snakeLength]}
-              animatedProps={animatedProps1}
-              strokeLinecap="round"
-            />
-
-            {/* MAIN SNAKE 2 */}
-            <AnimatedRect
-              x={borderWidth / 2}
-              y={borderWidth / 2}
-              width={dimensions.width - borderWidth}
-              height={dimensions.height - borderWidth}
-              rx={effectiveRadius}
-              ry={effectiveRadius}
-              stroke="url(#grad)"
-              strokeWidth={borderWidth}
-              fill="none"
-              strokeDasharray={[snakeLength, perimeter - snakeLength]}
-              animatedProps={animatedProps2}
-              strokeLinecap="round"
-            />
-          </Svg>
+              {/* Layer 3: The Core (Sharp Border) */}
+              <RoundedRect
+                x={borderWidth / 2}
+                y={borderWidth / 2}
+                width={dimensions.width - borderWidth}
+                height={dimensions.height - borderWidth}
+                r={Math.max(0, r - borderWidth / 2)}
+                style="stroke"
+                strokeWidth={borderWidth}
+                color="white"
+              >
+                <SweepGradient
+                  c={center}
+                  colors={borderColors}
+                />
+                <DashPathEffect intervals={intervals} phase={phase} />
+              </RoundedRect>
+            </Group>
+          </Canvas>
         </View>
       )}
 
@@ -226,7 +206,9 @@ const AnimatedBorderButton: React.FC<AnimatedBorderButtonProps> = ({
         style={[
           styles.innerButton,
           { margin: borderWidth },
-          { backgroundColor: isDarkMode ? colors.background : colors.white },
+          {
+            borderRadius: Math.max(0, effectiveRadius - borderWidth)
+          },
         ]}
         onPress={onPress}
         activeOpacity={0.8}
@@ -262,6 +244,7 @@ const createStyles = (colors: ThemeColors) =>
       justifyContent: 'center',
       flex: 1,
       width: '100%',
+      zIndex: 1, // Ensure button is above canvas
     },
     buttonText: {
       fontWeight: '600',
@@ -271,4 +254,4 @@ const createStyles = (colors: ThemeColors) =>
     },
   });
 
-export default AnimatedBorderButton;
+export default React.memo(AnimatedBorderButton);

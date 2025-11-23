@@ -4,18 +4,42 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { globalStyles } from '../styles/globalStyles';
 import { colors } from '../styles/colors';
 import type { NavigationProps } from '../types/navigation';
+import { Fonts } from '../theme/Fonts';
 import AnimatedBorderButton from '../components/AnimatedBorderButton';
+import AnimatedBorderView from '../components/AnimatedBorderView';
 import AnimatedGradientText from '../components/AnimatedGradientText';
+import { moderateScale } from '../utils/metrics';
 
 const HomeScreen: React.FC<NavigationProps<'Home'>> = ({ navigation }) => {
+  const startCall = () => {
+    requestAnimationFrame(() => {
+      navigation.navigate('WebRTCCall');
+    });
+  };
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <View style={globalStyles.centerContainer}>
         {/* App Logo/Icon */}
-        <View style={styles.logoContainer}>
-          <AnimatedGradientText text="Veep" />
-          {/* <Text style={styles.logoEmoji}>📹</Text> */}
-        </View>
+        {/* <AnimatedBorderView
+          style={styles.logoContainer}
+        // borderWidth={3}
+        // borderColors={[colors.primary, colors.primaryLight, colors.primary]}
+        >
+          <AnimatedGradientText
+            text="Veep"
+            style={{
+              fontFamily: Fonts.NunitoBold,
+              fontSize: moderateScale(24),
+            }}
+          />
+        </AnimatedBorderView> */}
+        <AnimatedGradientText
+          text="Veep"
+          style={{
+            fontFamily: Fonts.NunitoBold,
+            fontSize: moderateScale(24),
+          }}
+        />
 
         {/* Title */}
         {/* <Text style={globalStyles.title}>Veep</Text> */}
@@ -28,14 +52,17 @@ const HomeScreen: React.FC<NavigationProps<'Home'>> = ({ navigation }) => {
 
         {/* Action Buttons */}
         <View style={styles.buttonContainer}>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={[globalStyles.button, styles.primaryButton]}
             onPress={() => navigation.navigate('WebRTCCall')}
             activeOpacity={0.8}
           >
             <Text style={styles.buttonIcon}>📞</Text>
             <Text style={globalStyles.buttonText}>Start Video Call</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
+
+          <AnimatedBorderButton title="Start Video Call" onPress={startCall} />
+          <Text style={globalStyles.buttonText}></Text>
         </View>
 
         {/* Footer Info */}
@@ -60,8 +87,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 32,
-    borderWidth: 3,
-    borderColor: colors.primary,
     shadowColor: colors.primary,
     shadowOffset: {
       width: 0,

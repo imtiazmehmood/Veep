@@ -14,6 +14,7 @@ import {
   BackHandler,
   Animated,
   Dimensions,
+  InteractionManager,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { PanGestureHandler } from 'react-native-gesture-handler';
@@ -30,13 +31,13 @@ import {
 import InCallManager from 'react-native-incall-manager';
 import TextInputContainer from '../components/TextInputContainer';
 import IconContainer from '../components/IconContainer';
-import CallAnswer from '../asset/CallAnswer';
-import CallEnd from '../asset/CallEnd';
-import MicOn from '../asset/MicOn';
-import MicOff from '../asset/MicOff';
-import VideoOn from '../asset/VideoOn';
-import VideoOff from '../asset/VideoOff';
-import CameraSwitch from '../asset/CameraSwitch';
+import CallAnswer from '../assets/CallAnswer';
+import CallEnd from '../assets/CallEnd';
+import MicOn from '../assets/MicOn';
+import MicOff from '../assets/MicOff';
+import VideoOn from '../assets/VideoOn';
+import VideoOff from '../assets/VideoOff';
+import CameraSwitch from '../assets/CameraSwitch';
 import { SERVER_URL } from '../config/server';
 import type { NavigationProps } from '../types/navigation';
 import { colors } from '../styles/colors';
@@ -275,10 +276,13 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({
 
   // Initialize WebRTC (PeerConnection and LocalStream) - Run ONCE on mount
   useEffect(() => {
-    initializePeerConnection();
-    initializeLocalStream();
+    const interactionTask = InteractionManager.runAfterInteractions(() => {
+      initializePeerConnection();
+      initializeLocalStream();
+    });
 
     return () => {
+      interactionTask.cancel();
       console.log('🧹 Component unmounting - cleaning up WebRTC...');
       isMountedRef.current = false;
 
@@ -1379,10 +1383,10 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({
                   {!isSocketConnected
                     ? 'Connecting...'
                     : !effectiveDialTarget
-                    ? 'Enter Caller ID'
-                    : canInitiateCall
-                    ? 'Call Now'
-                    : 'Preparing...'}
+                      ? 'Enter Caller ID'
+                      : canInitiateCall
+                        ? 'Call Now'
+                        : 'Preparing...'}
                 </Text>
               </TouchableOpacity>
             </View>

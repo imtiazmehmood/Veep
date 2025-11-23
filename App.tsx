@@ -6,6 +6,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import AppNavigator from './src/navigation/AppNavigator';
 import { SocketProvider } from './src/context/SocketContext';
+import { ThemeProvider } from './src/context/ThemeContext';
+// import SkiaComponentsDemo from './src/screens/SkiaComponentsDemo';
 
 function AppContent() {
   return <AppNavigator />;
@@ -18,11 +20,14 @@ function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-        <NavigationContainer>
-          <SocketProvider>
-            <AppContent />
-          </SocketProvider>
-        </NavigationContainer>
+        <ThemeProvider>
+          <NavigationContainer>
+            <SocketProvider>
+              <AppContent />
+              {/* <SkiaComponentsDemo /> */}
+            </SocketProvider>
+          </NavigationContainer>
+        </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

@@ -4,11 +4,10 @@
     "allowJs": true,
     "skipLibCheck": true,
     "rootDir": ".",
-    "baseUrl": ".",
-    "typeRoots": ["./src/types", "./node_modules/@types"],
-    "paths": {
-      "@types/*": ["src/types/*"]
-    }
+    "typeRoots": [
+      "./src/types",
+      "./node_modules/@types"
+    ]
   },
   "include": [
     "App.tsx",

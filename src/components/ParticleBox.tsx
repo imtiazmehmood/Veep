@@ -8,29 +8,42 @@ import {
 } from 'react-native';
 import Animated, {
   useSharedValue,
-  useAnimatedStyle,
   withTiming,
   withRepeat,
   withSequence,
   Easing,
   cancelAnimation,
   runOnJS,
+  useDerivedValue,
 } from 'react-native-reanimated';
-import LinearGradient from 'react-native-linear-gradient';
+import {
+  Canvas,
+  Circle,
+  LinearGradient,
+  vec,
+  Group,
+  BlurMask,
+} from '@shopify/react-native-skia';
 import { moderateScale, verticalScale } from '../utils/metrics';
 
-interface AIParticleBoxProps {
+interface ParticleBoxProps {
   style?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
   particleColor?: string[];
   particleSize?: number;
+  minDuration?: number;
+  maxDuration?: number;
+  backgroundColor?: string;
 }
 
-const AIParticleBox: React.FC<AIParticleBoxProps> = ({
+const ParticleBox: React.FC<ParticleBoxProps> = ({
   style,
   children,
   particleColor = ['#00FFFF', '#0000FF', 'transparent'],
   particleSize = moderateScale(60),
+  minDuration = 2000,
+  maxDuration = 5000,
+  backgroundColor = 'rgba(0,0,0,0.05)',
 }) => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const translateX = useSharedValue(0);
@@ -55,8 +68,8 @@ const AIParticleBox: React.FC<AIParticleBoxProps> = ({
       const randomX = Math.random() * maxX;
       const randomY = Math.random() * maxY;
 
-      // Random duration for organic feel (2s to 5s)
-      const duration = 2000 + Math.random() * 3000;
+      // Random duration for organic feel
+      const duration = minDuration + Math.random() * (maxDuration - minDuration);
 
       translateX.value = withTiming(randomX, {
         duration: duration,
@@ -105,40 +118,34 @@ const AIParticleBox: React.FC<AIParticleBoxProps> = ({
       cancelAnimation(scale);
       cancelAnimation(opacity);
     };
-  }, [dimensions, particleSize]);
+  }, [dimensions, particleSize, minDuration, maxDuration]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { translateX: translateX.value },
-        { translateY: translateY.value },
-        { scale: scale.value },
-      ],
-      opacity: opacity.value,
-    };
-  });
+  // Derived values for Skia
+  const cx = useDerivedValue(() => translateX.value + particleSize / 2);
+  const cy = useDerivedValue(() => translateY.value + particleSize / 2);
+  const r = useDerivedValue(() => (particleSize / 2) * scale.value);
+
+  // Gradient positions
+  const start = useDerivedValue(() => vec(translateX.value, translateY.value));
+  const end = useDerivedValue(() => vec(translateX.value + particleSize, translateY.value + particleSize));
 
   return (
-    <View style={[styles.container, style]} onLayout={onLayout}>
+    <View style={[styles.container, { backgroundColor }, style]} onLayout={onLayout}>
       {dimensions.width > 0 && (
-        <Animated.View
-          style={[
-            styles.particle,
-            {
-              width: particleSize,
-              height: particleSize,
-              borderRadius: particleSize / 2,
-            },
-            animatedStyle,
-          ]}
-        >
-          <LinearGradient
-            colors={particleColor}
-            style={{ flex: 1, borderRadius: particleSize / 2 }}
-            start={{ x: 0.3, y: 0.3 }}
-            end={{ x: 1, y: 1 }}
-          />
-        </Animated.View>
+        <View style={StyleSheet.absoluteFill}>
+          <Canvas style={{ flex: 1 }}>
+            <Group opacity={opacity}>
+              <Circle cx={cx} cy={cy} r={r}>
+                <LinearGradient
+                  start={start}
+                  end={end}
+                  colors={particleColor}
+                />
+                <BlurMask blur={20} style="normal" />
+              </Circle>
+            </Group>
+          </Canvas>
+        </View>
       )}
       {children}
     </View>
@@ -148,21 +155,10 @@ const AIParticleBox: React.FC<AIParticleBoxProps> = ({
 const styles = StyleSheet.create({
   container: {
     overflow: 'hidden', // Keep particle inside
-    backgroundColor: 'rgba(0,0,0,0.05)', // Subtle background to see the box
     borderRadius: moderateScale(16),
     height: verticalScale(200),
     width: '100%',
   },
-  particle: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    shadowColor: '#00FFFF',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 20,
-    elevation: 10, // Android glow
-  },
 });
 
-export default AIParticleBox;
+export default React.memo(ParticleBox);
