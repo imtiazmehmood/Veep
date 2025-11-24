@@ -5,6 +5,7 @@ export type RootStackParamList = {
   WebRTCCall: {
     incomingCallData?: {
       callerId: string;
+      callId: string;
       rtcMessage: any;
     };
   } | undefined;

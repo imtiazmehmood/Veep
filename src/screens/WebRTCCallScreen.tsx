@@ -18,8 +18,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { PanGestureHandler } from 'react-native-gesture-handler';
-import { Socket } from 'socket.io-client';
-import { useSocket } from '../context/SocketContext';
+import { useFirebase } from '../context/FirebaseContext';
 import {
   mediaDevices,
   RTCPeerConnection,
@@ -38,7 +37,8 @@ import MicOff from '../assets/MicOff';
 import VideoOn from '../assets/VideoOn';
 import VideoOff from '../assets/VideoOff';
 import CameraSwitch from '../assets/CameraSwitch';
-import { SERVER_URL } from '../config/server';
+import * as firebaseSignaling from '../services/firebaseSignaling';
+import { CallStatus } from '../config/firebase';
 import type { NavigationProps } from '../types/navigation';
 import { colors } from '../styles/colors';
 
@@ -73,7 +73,7 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({
   navigation,
   route,
 }) => {
-  const { socket, isSocketConnected, callerId, connectionStatus } = useSocket();
+  const { isFirestoreConnected, callerId, connectionStatus } = useFirebase();
   const incomingCallData = route?.params?.incomingCallData;
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
@@ -89,11 +89,9 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({
 
   const otherUserId = useRef<string | null>(null);
   const remoteRTCMessage = useRef<RTCSessionDescription | null>(null);
-  // socketRef is now coming from context, but we keep a local ref for compatibility with existing code structure if needed,
-  // or better yet, just use the socket from context directly.
-  // However, existing code uses socketRef.current widely.
-  // Let's keep socketRef but sync it with context socket.
-  const socketRef = useRef<Socket | null>(null);
+  const currentCallId = useRef<string | null>(null);
+  const callListenerUnsubscribe = useRef<(() => void) | null>(null);
+  const iceCandidateListenerUnsubscribe = useRef<(() => void) | null>(null);
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const isCaller = useRef<boolean>(false);
   const localStreamRef = useRef<MediaStream | null>(null);
@@ -142,23 +140,19 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({
   // Get current call type (for switch statement)
   const currentCallType = currentCallTypeRef.current;
 
-  // Sync socket from context to local ref
-  useEffect(() => {
-    socketRef.current = socket;
-  }, [socket]);
-
   // Handle incoming call data from navigation
   useEffect(() => {
-    if (incomingCallData && socket) {
+    if (incomingCallData) {
       console.log('📱 Handling incoming call data:', incomingCallData);
       remoteRTCMessage.current = incomingCallData.rtcMessage;
       otherUserId.current = incomingCallData.callerId;
+      currentCallId.current = incomingCallData.callId;
       isCaller.current = false;
       updateCallType(CallType.INCOMING_CALL);
       startIncomingRingtone();
       startRingingTimeout();
     }
-  }, [incomingCallData, socket]);
+  }, [incomingCallData]);
 
   // Helper function to safely set state only if component is mounted
   const safeSetState = <T,>(setter: (value: T) => void, value: T) => {
@@ -348,41 +342,36 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({
     };
   }, []);
 
-  // Attach Socket Listeners - Run when socket changes
+  // Attach Firebase Listeners - Run when we have an active call
   useEffect(() => {
-    if (!socket) return;
+    // Only set up listeners if we have a callId
+    if (!currentCallId.current) return;
 
-    console.log('🔌 Attaching socket listeners to ID:', socket.id);
+    const callId = currentCallId.current;
+    console.log('🔥 Setting up Firebase listeners for call:', callId);
 
-    // Function to attach screen-specific handlers
-    const attachScreenHandlers = (socketInstance: Socket) => {
-      // Remove existing listeners to avoid duplicates
-      socketInstance.off('callAnswered');
-      socketInstance.off('callEnded');
-      socketInstance.off('callRejected');
-      socketInstance.off('ICEcandidate');
-
-      socketInstance.on('callAnswered', async data => {
-        console.log('📞 Call answered by', data.callee);
+    // Listen to call document for answer and status changes
+    const callUnsubscribe = firebaseSignaling.listenToCall(callId, {
+      onAnswer: async (answer: RTCSessionDescription) => {
+        console.log('📞 Call answered');
         if (!isMountedRef.current) return;
 
-        remoteRTCMessage.current = data.rtcMessage;
+        remoteRTCMessage.current = answer;
 
         if (!peerConnectionRef.current) {
-          console.error('PeerConnection is null in callAnswered!');
+          console.error('PeerConnection is null when answer received!');
           return;
         }
 
-        if (remoteRTCMessage.current) {
+        if (answer) {
           try {
             const currentState = peerConnectionRef.current.signalingState;
             console.log('Current signaling state:', currentState);
 
             // Only set remote description if we're in the correct state
-            // For an answer, we should be in 'have-local-offer' state
             if (currentState === 'have-local-offer') {
               await peerConnectionRef.current.setRemoteDescription(
-                new RTCSessionDescription(remoteRTCMessage.current),
+                new RTCSessionDescription(answer),
               );
               console.log('Remote description set (Answer)');
               flushPendingCandidates();
@@ -390,8 +379,6 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({
               console.warn(
                 'Already in stable state, skipping setRemoteDescription',
               );
-              // If already stable, the connection might already be established
-              // Just flush any pending candidates
               flushPendingCandidates();
             } else {
               console.error(
@@ -402,8 +389,6 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({
           } catch (error: any) {
             console.error('Error setting remote description:', error);
           }
-        } else {
-          console.error('Remote RTC message is missing in callAnswered');
         }
 
         // Clear the ringing timeout since call is now answered
@@ -414,7 +399,6 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({
         stopAllRingSounds();
         InCallManager.setForceSpeakerphoneOn(true);
         setIsSpeakerOn(true);
-        // Ensure call manager is started when call is answered
         InCallManager.start({ media: 'video' });
         updateCallType(CallType.WEBRTC_ROOM);
 
@@ -423,26 +407,32 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({
         localVideoTranslateX.setValue(0);
         localVideoTranslateY.setOffset(100);
         localVideoTranslateY.setValue(0);
-      });
+      },
+      onStatusChange: (status: CallStatus) => {
+        console.log('📊 Call status changed:', status);
+      },
+      onCallEnded: () => {
+        console.log('📞 Call ended remotely');
+        handleRemoteHangup({});
+      },
+    });
 
-      socketInstance.on('callEnded', handleRemoteHangup);
-      socketInstance.on('callRejected', handleCallRejected);
+    callListenerUnsubscribe.current = callUnsubscribe;
 
-      socketInstance.on('ICEcandidate', async data => {
-        console.log('Received ICE candidate from', data.sender);
+    // Listen to ICE candidates from the other party
+    // If we're the caller, listen to callee's candidates; if callee, listen to caller's
+    const party = isCaller.current ? 'callee' : 'caller';
+    const iceUnsubscribe = firebaseSignaling.listenToIceCandidates(
+      callId,
+      party,
+      async (candidate: RTCIceCandidate) => {
+        console.log('🧊 Received ICE candidate from', party);
         if (!isMountedRef.current) return;
-
-        let message = data.rtcMessage;
 
         if (peerConnectionRef.current) {
           if (peerConnectionRef.current.remoteDescription) {
-            const iceCandidate = new RTCIceCandidate({
-              candidate: message.candidate,
-              sdpMLineIndex: message.label,
-              sdpMid: message.id,
-            });
             try {
-              await peerConnectionRef.current.addIceCandidate(iceCandidate);
+              await peerConnectionRef.current.addIceCandidate(candidate);
               console.log('ICE candidate added successfully');
             } catch (err) {
               console.error('Error adding ICE candidate:', err);
@@ -451,32 +441,27 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({
             console.log(
               'Remote description not set yet, queueing ICE candidate',
             );
-            pendingRemoteCandidates.current.push(message);
+            pendingRemoteCandidates.current.push(candidate);
           }
         }
-      });
-    };
+      },
+    );
 
-    attachScreenHandlers(socket);
+    iceCandidateListenerUnsubscribe.current = iceUnsubscribe;
 
     return () => {
-      // Cleanup socket listeners only
-      if (socket) {
-        try {
-          socket.off('callEnded');
-          socket.off('callRejected');
-          socket.off('callAnswered');
-          socket.off('ICEcandidate');
-          console.log('Socket listeners detached');
-        } catch (error: any) {
-          console.log(
-            'Error cleaning up socket listeners:',
-            error?.message || error,
-          );
-        }
+      // Cleanup Firebase listeners
+      console.log('🧹 Cleaning up Firebase listeners');
+      if (callListenerUnsubscribe.current) {
+        callListenerUnsubscribe.current();
+        callListenerUnsubscribe.current = null;
+      }
+      if (iceCandidateListenerUnsubscribe.current) {
+        iceCandidateListenerUnsubscribe.current();
+        iceCandidateListenerUnsubscribe.current = null;
       }
     };
-  }, [socket]);
+  }, [currentCallId.current]);
 
   // Removed local createSocket and attachSocketHandlers functions as they are replaced by context
 
@@ -711,15 +696,7 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({
     }
   }
 
-  // Function to reconnect socket if disconnected
-  function reconnectSocketIfNeeded() {
-    if (!isMountedRef.current) return;
-    if (socket && !socket.connected) {
-      console.log('Socket disconnected, attempting to reconnect...');
-      // Global socket handles reconnection, but we can trigger it manually if needed
-      socket.connect();
-    }
-  }
+
 
   function cleanupCall({
     notifyRemote = false,
@@ -740,21 +717,6 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({
 
     isCleaningUpRef.current = true;
     console.log('Cleaning up call state', reason);
-    if (notifyRemote && socketRef.current && socketRef.current.connected) {
-      try {
-        const targetId = otherUserId.current || lastDialedId;
-        if (targetId) {
-          socketRef.current.emit('leaveCall', {
-            targetId,
-          });
-        }
-      } catch (error: any) {
-        console.log(
-          'Error notifying remote of leave:',
-          error?.message || error,
-        );
-      }
-    }
     stopAllRingSounds();
     if (ringingTimeoutRef.current) {
       clearTimeout(ringingTimeoutRef.current);
@@ -826,9 +788,6 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({
       otherUserId.current = null;
     }
 
-    // Reconnect socket if needed
-    reconnectSocketIfNeeded();
-
     if (resetForReuse) {
       // Reinitialize peer connection and stream asynchronously
       // Don't block the UI update
@@ -842,13 +801,8 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({
           initializePeerConnection();
           initializeLocalStream()
             .then(() => {
-              // Update connection status based on socket state (only if mounted)
+              // Update connection status based on Firebase state (only if mounted)
               if (isMountedRef.current) {
-                if (socketRef.current && socketRef.current.connected) {
-                  // setConnectionStatus(`Connected to ${currentServerURL.current.replace('http://', '')}`);
-                } else {
-                  // setConnectionStatus('Reconnecting to server...');
-                }
                 // Ensure canInitiateCall is true after reinitialization
                 setCanInitiateCall(true);
               }
@@ -878,13 +832,8 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({
         }
       }, 100); // Small delay to ensure cleanup is complete
     } else {
-      // Update connection status based on socket state (only if mounted)
+      // Update connection status based on Firebase state (only if mounted)
       if (isMountedRef.current) {
-        if (socketRef.current && socketRef.current.connected) {
-          // setConnectionStatus(`Connected to ${currentServerURL.current.replace('http://', '')}`);
-        } else {
-          // setConnectionStatus('Reconnecting to server...');
-        }
       }
       isCleaningUpRef.current = false;
     }
@@ -987,17 +936,6 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({
       return;
     }
 
-    if (!isSocketConnected) {
-      console.error('Cannot initiate call: Socket not connected to server');
-      console.error('Please check:');
-      console.error('1. Server is running');
-      console.error('2. SERVER_URL is correct:', SERVER_URL);
-      console.error('3. Network connectivity');
-      setCanInitiateCall(true); // Reset to allow retry
-      // setConnectionStatus('Not connected to server - Reconnecting...');
-      reconnectSocketIfNeeded();
-      return;
-    }
 
     if (!canInitiateCall) {
       console.log('Call already in progress – ignoring new attempt');
@@ -1127,42 +1065,64 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({
     localVideoTranslateY.setValue(0);
   }
 
-  function answerCall(data: {
+  async function answerCall(data: {
     callerId: string;
     rtcMessage: RTCSessionDescription;
   }) {
-    if (socketRef.current && socketRef.current.connected) {
-      console.log('Sending answerCall to:', data.callerId);
-      socketRef.current.emit('answerCall', data);
-    } else {
-      console.error('Cannot answer call: Socket not connected', {
-        socketExists: !!socketRef.current,
-        connected: socketRef.current?.connected,
-      });
+    if (!currentCallId.current) {
+      console.error('Cannot answer call: No active call ID');
+      return;
+    }
+    try {
+      console.log('Sending answer to Firebase for call:', currentCallId.current);
+      await firebaseSignaling.answerCall(currentCallId.current, data.rtcMessage);
+    } catch (error: any) {
+      console.error('Error answering call:', error?.message || error);
     }
   }
 
-  function sendCall(data: {
+  async function sendCall(data: {
     calleeId: string;
     rtcMessage: RTCSessionDescription;
   }) {
-    if (socketRef.current && socketRef.current.connected) {
-      socketRef.current.emit('call', data);
-      console.log('Call signal sent to server');
-    } else {
-      console.error('Cannot send call: Socket not connected');
+    try {
+      console.log('Creating call in Firebase to:', data.calleeId);
+      const callId = await firebaseSignaling.createCall(
+        callerId || 'unknown',
+        data.calleeId,
+        data.rtcMessage
+      );
+      currentCallId.current = callId;
+      console.log('Call created with ID:', callId);
+    } catch (error: any) {
+      console.error('Error creating call:', error?.message || error);
     }
   }
 
-  function sendICEcandidate(data: {
+  async function sendICEcandidate(data: {
     calleeId?: string;
     callerId?: string;
-    rtcMessage: RTCIceCandidate;
+    rtcMessage: any;
   }) {
-    if (socketRef.current && socketRef.current.connected) {
-      socketRef.current.emit('ICEcandidate', data);
-    } else {
-      console.warn('Cannot send ICE candidate: Socket not connected');
+    if (!currentCallId.current) {
+      console.warn('Cannot send ICE candidate: No active call ID');
+      return;
+    }
+    try {
+      const party = isCaller.current ? 'caller' : 'callee';
+      const candidate: RTCIceCandidate = {
+        candidate: data.rtcMessage.candidate,
+        sdpMLineIndex: data.rtcMessage.label,
+        sdpMid: data.rtcMessage.id,
+      } as RTCIceCandidate;
+
+      await firebaseSignaling.addIceCandidate(
+        currentCallId.current,
+        candidate,
+        party
+      );
+    } catch (error: any) {
+      console.error('Error sending ICE candidate:', error?.message || error);
     }
   }
 
@@ -1273,16 +1233,14 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({
     // setConnectionStatus('Call ended - Ready to call again');
   }
 
-  function rejectIncomingCall() {
+  async function rejectIncomingCall() {
     console.log('Rejecting incoming call');
-    if (
-      socketRef.current &&
-      socketRef.current.connected &&
-      otherUserId.current
-    ) {
-      socketRef.current.emit('rejectCall', {
-        callerId: otherUserId.current,
-      });
+    if (currentCallId.current) {
+      try {
+        await firebaseSignaling.rejectCall(currentCallId.current);
+      } catch (error: any) {
+        console.error('Error rejecting call:', error?.message || error);
+      }
     }
     stopAllRingSounds();
     cleanupCall({ notifyRemote: false, reason: 'Rejected incoming call' });
@@ -1295,18 +1253,18 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({
 
     const statusIndicatorStyle: StyleProp<ViewStyle> = [
       styles.statusIndicator,
-      { backgroundColor: isSocketConnected ? colors.success : colors.danger },
+      { backgroundColor: isFirestoreConnected ? colors.success : colors.danger },
     ];
 
     const callButtonStyle: StyleProp<ViewStyle> = [
       styles.callButton,
       {
         backgroundColor:
-          isSocketConnected && effectiveDialTarget && canInitiateCall
+          isFirestoreConnected && effectiveDialTarget && canInitiateCall
             ? '#5568FE'
             : '#555555',
         opacity:
-          isSocketConnected && effectiveDialTarget && canInitiateCall ? 1 : 0.5,
+          isFirestoreConnected && effectiveDialTarget && canInitiateCall ? 1 : 0.5,
       },
     ];
 
@@ -1342,7 +1300,7 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({
                 }}
                 keyboardType={'number-pad'}
               />
-              {!isSocketConnected && (
+              {!isFirestoreConnected && (
                 <View style={styles.errorBanner}>
                   <Text style={styles.errorText}>Disconnected.</Text>
                 </View>
@@ -1351,12 +1309,6 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({
                 onPress={() => {
                   if (!effectiveDialTarget || !effectiveDialTarget.trim()) {
                     console.error('Cannot call: No target user ID provided');
-                    return;
-                  }
-                  if (!isSocketConnected) {
-                    console.error('Cannot call: Socket not connected');
-                    // setConnectionStatus('Not connected - Reconnecting...');
-                    reconnectSocketIfNeeded();
                     return;
                   }
                   if (!canInitiateCall) {
@@ -1375,12 +1327,12 @@ const WebRTCCallScreen: React.FC<NavigationProps<'WebRTCCall'>> = ({
                   updateCallType(CallType.OUTGOING_CALL);
                 }}
                 disabled={
-                  !isSocketConnected || !effectiveDialTarget || !canInitiateCall
+                  !isFirestoreConnected || !effectiveDialTarget || !canInitiateCall
                 }
                 style={callButtonStyle}
               >
                 <Text style={styles.callButtonText}>
-                  {!isSocketConnected
+                  {!isFirestoreConnected
                     ? 'Connecting...'
                     : !effectiveDialTarget
                       ? 'Enter Caller ID'
